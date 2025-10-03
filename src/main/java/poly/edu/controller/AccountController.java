@@ -2,17 +2,14 @@ package poly.edu.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import poly.edu.model.Account;
 
 @Controller
 @RequestMapping("/account")
 public class AccountController {
-    
+
     // Trang tài khoản chính
     @GetMapping
     public String accountPage(Model model) {
@@ -24,30 +21,53 @@ public class AccountController {
                 .fullName("Nguyễn Văn User")
                 .activated(true)
                 .build();
-        
+
         model.addAttribute("account", account);
-        return "poly/account"; // trỏ tới file account.html trong /templates/poly/
+        return "poly/account"; 
     }
 
-    // Trang đăng ký
+    // ================== Đăng ký ==================
     @GetMapping("/register")
-    public String registerPage() {
+    public String registerPage(Model model) {
+        model.addAttribute("account", new Account());
         return "poly/register";
     }
 
-    // Trang cập nhật thông tin
+    @PostMapping("/register")
+    public String register(@ModelAttribute("account") Account account, Model model) {
+        // TODO: lưu account vào DB
+        model.addAttribute("message", "✅ Đăng ký thành công!");
+        return "poly/register";
+    }
+
+    // ================== Cập nhật ==================
     @GetMapping("/update")
-    public String updatePage() {
+    public String updatePage(Model model) {
+        // Ví dụ giả lập dữ liệu có sẵn
+        Account account = Account.builder()
+                .id(1L)
+                .username("polyuser")
+                .email("user@fpt.edu.vn")
+                .fullName("Nguyễn Văn User")
+                .activated(true)
+                .build();
+        model.addAttribute("account", account);
         return "poly/update-account";
     }
 
-    // Trang đổi mật khẩu
+    @PostMapping("/update")
+    public String updateAccount(@ModelAttribute("account") Account account, Model model) {
+        // TODO: lưu thay đổi vào DB
+        model.addAttribute("message", "✅ Cập nhật thông tin thành công!");
+        return "poly/update-account";
+    }
+
+    // ================== Đổi mật khẩu ==================
     @GetMapping("/doiMatKhau")
     public String doiMatKhauForm() {
         return "poly/doiMatKhau"; 
     }
 
-    // POST - xử lý đổi mật khẩu
     @PostMapping("/doiMatKhau")
     public String doiMatKhau(
             @RequestParam String oldPassword,
@@ -60,14 +80,8 @@ public class AccountController {
             return "poly/doiMatKhau";
         }
 
-        // TODO: thêm logic kiểm tra mật khẩu cũ trong DB
+        // TODO: kiểm tra oldPassword trong DB
         model.addAttribute("message", "✅ Đổi mật khẩu thành công!");
         return "poly/doiMatKhau";
-    }
-
-    // Trang quên mật khẩu
-    @GetMapping("/forgot-password")
-    public String forgotPasswordPage() {
-        return "poly/forgot-password";
     }
 }

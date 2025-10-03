@@ -121,7 +121,7 @@
     <header style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1rem 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
         <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-                <a href="/poly" style="font-size: 2rem; font-weight: bold; text-decoration: none; color: white;">🛍️ ShopVN</a>
+                <a href="/home" style="font-size: 2rem; font-weight: bold; text-decoration: none; color: white;">🛍️ ShopVN</a>
                 
                 <div style="display: flex; gap: 1.5rem;">
                     <a href="/cart" style="background: rgba(255,255,255,0.2); color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; text-decoration: none; display: inline-block; transition: background 0.3s;">🛒 Giỏ hàng</a>
@@ -168,7 +168,7 @@
                 </div>
                 
                 <div style="display: flex; gap: 1rem; margin-top: 2rem; flex-wrap: wrap;">
-                    <a href="/poly" class="back-button">← Quay lại trang chủ</a>
+                    <a href="/home" class="back-button">← Quay lại trang chủ</a>
                     
                     <form method="POST" action="/cart/add" style="display: inline;">
                         <input type="hidden" name="productId" th:value="${product.id}">

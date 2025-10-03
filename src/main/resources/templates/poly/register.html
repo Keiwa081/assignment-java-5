@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
 <meta charset="UTF-8">
-<title>Đổi mật khẩu</title>
+<title>Đăng ký tài khoản</title>
 <link rel="stylesheet" href="/style.css">
 </head>
 <body>
@@ -20,7 +20,6 @@
 				<div class="header-actions">
 					<a href="/cart" class="header-btn">🛒 Giỏ hàng</a> 
 					<a href="/account" class="header-btn">👤 Tài khoản</a>
-
 				</div>
 			</div>
 		</div>
@@ -29,33 +28,39 @@
 	<!-- Navigation -->
 	<nav>
 		<div class="nav-container">
-			<a href="/home">Trang chủ</a> <a href="/products">Sản phẩm</a> <a
-				href="/about">Giới thiệu</a> <a href="/contact">Liên hệ</a>
+			<a href="/home">Trang chủ</a>
+			<a href="/products">Sản phẩm</a>
+			<a href="/about">Giới thiệu</a>
+			<a href="/contact">Liên hệ</a>
 		</div>
 	</nav>
 
-	<!-- Form đổi mật khẩu -->
+	<!-- Form đăng ký -->
 	<div class="form-container">
-		<h2>🔑 Đổi mật khẩu</h2>
-		<form th:action="@{/account/doiMatKhau}" method="post">
+		<h2>📝 Đăng ký tài khoản</h2>
+		<form th:action="@{/account/register}" method="post">
 			<div class="form-group">
-				<label>Mật khẩu cũ</label> <input type="password" name="oldPassword"
-					required>
+				<label>Tên đăng nhập</label>
+				<input type="text" name="username" required>
 			</div>
 			<div class="form-group">
-				<label>Mật khẩu mới</label> <input type="password"
-					name="newPassword" required>
+				<label>Email</label>
+				<input type="email" name="email" required>
 			</div>
 			<div class="form-group">
-				<label>Xác nhận mật khẩu</label> <input type="password"
-					name="confirmPassword" required>
+				<label>Họ và tên</label>
+				<input type="text" name="fullName" required>
 			</div>
-			<button type="submit" class="btn-submit">Cập nhật mật khẩu</button>
+			<div class="form-group">
+				<label>Mật khẩu</label>
+				<input type="password" name="password" required>
+			</div>
+			<div class="form-group">
+				<label>Xác nhận mật khẩu</label>
+				<input type="password" name="confirmPassword" required>
+			</div>
+			<button type="submit" class="btn-submit">Đăng ký</button>
 		</form>
-
-		<!-- Thông báo -->
-		<div th:if="${error}" class="message error" th:text="${error}"></div>
-		<div th:if="${message}" class="message success" th:text="${message}"></div>
 	</div>
 </body>
 </html>

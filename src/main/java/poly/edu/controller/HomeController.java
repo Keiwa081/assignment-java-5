@@ -9,12 +9,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.web.bind.annotation.RequestParam;
 import poly.edu.model.Product;
 
 @Controller
 public class HomeController {
     
-    @GetMapping("/poly")
+    @GetMapping("/home")
     public String home(Model model) {
         List<Product> featuredProducts = getFeaturedProducts();
         List<String> categories = getCategories();
@@ -50,6 +51,7 @@ public class HomeController {
                 .price(25990000.0)
                 .imageUrl("https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=400")
                 .rating(4.5)
+                .category("Laptop")
                 .build(),
             Product.builder()
                 .id(2L)
@@ -58,6 +60,7 @@ public class HomeController {
                 .price(29990000.0)
                 .imageUrl("https://www.apple.com/newsroom/images/2023/09/apple-unveils-iphone-15-pro-and-iphone-15-pro-max/article/Apple-iPhone-15-Pro-lineup-hero-230912_Full-Bleed-Image.jpg.xlarge.jpg")
                 .rating(4.8)
+                .category("Điện thoại")
                 .build(),
             Product.builder()
                 .id(3L)
@@ -66,6 +69,7 @@ public class HomeController {
                 .price(8990000.0)
                 .imageUrl("https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=400")
                 .rating(4.7)
+                .category("Tai nghe")
                 .build(),
             Product.builder()
                 .id(4L)
@@ -74,6 +78,7 @@ public class HomeController {
                 .price(6990000.0)
                 .imageUrl("https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400")
                 .rating(4.4)
+                .category("Đồng hồ")
                 .build(),
             Product.builder()
                 .id(5L)
@@ -82,6 +87,7 @@ public class HomeController {
                 .price(24990000.0)
                 .imageUrl("https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400")
                 .rating(4.6)
+                .category("Máy tính bảng")
                 .build(),
             Product.builder()
                 .id(6L)
@@ -90,6 +96,7 @@ public class HomeController {
                 .price(55990000.0)
                 .imageUrl("https://bizweb.dktcdn.net/100/378/894/files/r5-vs-r6-2.jpg?v=1594623430159")
                 .rating(4.9)
+                .category("Máy ảnh")
                 .build()
         );
     }
@@ -97,8 +104,7 @@ public class HomeController {
     private List<String> getCategories() {
         return Arrays.asList(
             "Điện thoại", "Laptop", "Máy tính bảng", 
-            "Âm thanh", "Đồng hồ", "Phụ kiện", 
-            "Nhà cửa", "Thời trang"
+            "Tai Nghe", "Máy ảnh", "Đồng hồ", "Chuột"
         );
     }
     
@@ -108,4 +114,46 @@ public class HomeController {
             .findFirst()
             .orElse(null);
     }
+    
+        @GetMapping("/category/{name}")
+    public String categoryPage(@PathVariable String name, Model model) {
+    List<Product> featuredProducts = getFeaturedProducts();
+    
+    List<Product> filteredProducts = featuredProducts.stream()
+            .filter(p -> p.getCategory().equalsIgnoreCase(name))
+            .toList();
+
+    model.addAttribute("products", filteredProducts);
+    model.addAttribute("categories", getCategories());
+    model.addAttribute("categoryName", name);
+
+    return "poly/category";
+}
+        @GetMapping("/terms")
+    public String terms() {
+        return "poly/terms";
+    }
+
+    @GetMapping("/privacy")
+    public String privacy() {
+        return "poly/privacy";
+    }
+    
+        @GetMapping("/search")
+    public String search(@RequestParam("q") String keyword, Model model) {
+        List<Product> featuredProducts = getFeaturedProducts();
+
+        // Lọc sản phẩm theo tên có chứa keyword (không phân biệt hoa thường)
+        List<Product> searchResults = featuredProducts.stream()
+                .filter(p -> p.getName().toLowerCase().contains(keyword.toLowerCase()))
+                .toList();
+
+        model.addAttribute("products", searchResults);
+        model.addAttribute("categories", getCategories());
+        model.addAttribute("keyword", keyword);
+
+        return "poly/search"; // trang search.html
+    }
+
+
 }

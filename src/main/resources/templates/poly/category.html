@@ -42,7 +42,6 @@
             font-weight: bold;
             text-decoration: none;
             color: white;
-            
         }
         
         .search-bar {
@@ -332,15 +331,13 @@
     <header>
         <div class="header-container">
             <div class="header-top">
-                <a href="/home" class="logo">️<img src="/photos/logo.png" alt="ShopVN" style="height:100px; vertical-align:middle;"> ShopVN</a>
+                <a href="/home" class="logo">🛍️ ShopVN</a>
                 
-                    <div class="search-bar">
-                        <form th:action="@{/search}" method="get" style="display:flex; align-items:center;">
-                            <input type="text" name="q" placeholder="Tìm kiếm sản phẩm, thương hiệu..." required >
-                            <button type="submit" style="padding:8px 12px; margin-left:5px;">Tìm</button>
-                        </form>
-                    </div>
-
+                <div class="search-bar">
+                    <input type="text" placeholder="Tìm kiếm sản phẩm, thương hiệu...">
+                    <button>Tìm</button>
+                </div>
+                
                 <div class="header-actions">
                     <a href="/cart" class="header-btn">🛒 Giỏ hàng</a>
                     <a href="/account" class="header-btn">👤 Tài khoản</a>
@@ -348,15 +345,8 @@
             </div>
         </div>
     </header>
-     
-   <!-- Banner -->
-    <div class="banner">
-        <h1>Siêu Sale Tháng 10</h1>
-        <p>Giảm giá lên đến 50% cho tất cả sản phẩm</p>
-        <a href="/under-construction" class="banner-btn">Mua Ngay</a>
-    </div>
-   
-       <!-- Navigation -->
+    
+    <!-- Navigation -->
     <nav>
         <div class="nav-container">
             <a th:each="category : ${categories}" 
@@ -365,6 +355,13 @@
 
         </div>
     </nav>
+     
+   <!-- Banner -->
+    <div class="banner">
+        <h1>Siêu Sale Tháng 10</h1>
+        <p>Giảm giá lên đến 50% cho tất cả sản phẩm</p>
+        <a href="/under-construction" class="banner-btn">Mua Ngay</a>
+    </div>
     
     <!-- Success/Error Message -->
     <div th:if="${message}" 
@@ -374,7 +371,7 @@
     
     <!-- Products -->
     <div class="container">
-        <h2 class="section-title">🔥 Sản phẩm nổi bật</h2>
+        <h2 class="section-title">🔥 Danh mục: <span th:text="${categoryName}"></span></h2>
         
         <div class="products-grid">
             <div class="product-card" th:each="product : ${products}">
@@ -412,8 +409,9 @@
             <div class="footer-section">
                 <h3>Về ShopVN</h3>
                 <a href="/under-construction">Giới thiệu</a>
-                <a href="/terms">Điều khoản</a>
-                <a href="/privacy">Chính sách bảo mật</a>
+                <a href="/under-construction">Tuyển dụng</a>
+                <a href="/under-construction">Điều khoản</a>
+                <a href="/under-construction">Chính sách bảo mật</a>
             </div>
             
             <div class="footer-section">

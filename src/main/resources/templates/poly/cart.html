@@ -351,7 +351,7 @@
     <header>
         <div class="header-container">
             <div class="header-top">
-                <a href="/poly" class="logo">🛍️ ShopVN</a>
+                <a href="/home" class="logo">🛍️ ShopVN</a>
                 
                 <div class="header-actions">
                     <a href="/cart" class="header-btn">🛒 Giỏ hàng (<span th:text="${itemCount}">0</span>)</a>
@@ -420,7 +420,7 @@
                 <div class="empty-cart-icon">🛒</div>
                 <h2>Giỏ hàng trống</h2>
                 <p>Bạn chưa có sản phẩm nào trong giỏ hàng</p>
-                <a href="/poly" class="btn btn-primary">Tiếp tục mua sắm</a>
+                <a href="/home" class="btn btn-primary">Tiếp tục mua sắm</a>
             </div>
             
             <!-- Cart Summary -->
@@ -441,7 +441,7 @@
             
             <!-- Cart Actions -->
             <div class="cart-actions" th:if="${cartItems != null and !cartItems.empty}">
-                <a href="/poly" class="btn btn-secondary">Tiếp tục mua sắm</a>
+                <a href="/home" class="btn btn-secondary">Tiếp tục mua sắm</a>
                 <button class="btn btn-danger" onclick="clearCart()">Xóa giỏ hàng</button>
                 <button class="btn btn-primary">Thanh toán</button>
             </div>
