@@ -319,7 +319,7 @@
                 </div>
                 
                 <div class="header-actions">
-                    <a href="/under-construction" class="header-btn">🛒 Giỏ hàng</a>
+                    <a href="/cart" class="header-btn">🛒 Giỏ hàng</a>
                     <a href="/account" class="header-btn">👤 Tài khoản</a>
                 </div>
             </div>
@@ -363,9 +363,13 @@
                     </div>
                 </div>
                 
-                <button class="add-to-cart" onclick="window.location.href='/under-construction'">
-                    Thêm vào giỏ
-                </button>
+                <form method="POST" action="/cart/add" style="display: inline;">
+                    <input type="hidden" name="productId" th:value="${product.id}">
+                    <input type="hidden" name="quantity" value="1">
+                    <button type="submit" class="add-to-cart">
+                        Thêm vào giỏ
+                    </button>
+                </form>
             </div>
         </div>
     </div>
