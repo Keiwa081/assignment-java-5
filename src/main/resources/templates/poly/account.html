@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Trang tài khoản</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+    	<div class="header-container">
+			<div class="header-top">
+				<a href="/" class="logo">🛍️ ShopVN</a>
+
+				<div class="search-bar">
+					<input type="text" placeholder="Tìm kiếm sản phẩm, thương hiệu...">
+					<button>Tìm</button>
+				</div>
+
+				<div class="header-actions">
+					<a href="/cart" class="header-btn">🛒 Giỏ hàng</a> 
+					<a href="/account" class="header-btn">👤 Tài khoản</a>
+
+				</div>
+			</div>
+		</div>
+	</header>
+
+    <!-- Account Container -->
+    <main>
+        <div class="account-container">
+            <div class="account-header">
+                <h1>Xin chào, <span th:text="${account.fullName}">Nguyễn Văn A</span> 👤</h1>
+                <p>Email: <span th:text="${account.email}">abc@gmail.com</span></p>
+                <p>Tài khoản: <span th:text="${account.username}">nguyenvana</span></p>
+                <p>Trạng thái: 
+                    <span th:text="${account.activated ? 'Đã kích hoạt' : 'Chưa kích hoạt'}">Đã kích hoạt</span>
+                </p>
+            </div>
+
+            <div class="account-links">
+                <a href="/account/register">📝 Đăng ký tài khoản</a>
+                <a href="/account/update">✏️ Cập nhật thông tin</a>
+                <a href="/account/doiMatKhau">🔑 Đổi mật khẩu</a>
+                <a href="/account/forgot-password">❓ Quên mật khẩu</a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>© 2025 ShopVN. All rights reserved.</p>
+    </footer>
+
+</body>
+</html>

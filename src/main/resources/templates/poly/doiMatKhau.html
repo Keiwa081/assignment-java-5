@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Đổi mật khẩu</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+	<!-- Header -->
+	<header>
+		<div class="header-container">
+			<div class="header-top">
+				<a href="/" class="logo">🛍️ ShopVN</a>
+
+				<div class="search-bar">
+					<input type="text" placeholder="Tìm kiếm sản phẩm, thương hiệu...">
+					<button>Tìm</button>
+				</div>
+
+				<div class="header-actions">
+					<a href="/cart" class="header-btn">🛒 Giỏ hàng</a> 
+					<a href="/account" class="header-btn">👤 Tài khoản</a>
+
+				</div>
+			</div>
+		</div>
+	</header>
+
+	<!-- Navigation -->
+	<nav>
+		<div class="nav-container">
+			<a href="/poly">Trang chủ</a> <a href="/products">Sản phẩm</a> <a
+				href="/about">Giới thiệu</a> <a href="/contact">Liên hệ</a>
+		</div>
+	</nav>
+
+	<!-- Form đổi mật khẩu -->
+	<div class="form-container">
+		<h2>🔑 Đổi mật khẩu</h2>
+		<form th:action="@{/account/doiMatKhau}" method="post">
+			<div class="form-group">
+				<label>Mật khẩu cũ</label> <input type="password" name="oldPassword"
+					required>
+			</div>
+			<div class="form-group">
+				<label>Mật khẩu mới</label> <input type="password"
+					name="newPassword" required>
+			</div>
+			<div class="form-group">
+				<label>Xác nhận mật khẩu</label> <input type="password"
+					name="confirmPassword" required>
+			</div>
+			<button type="submit" class="btn-submit">Cập nhật mật khẩu</button>
+		</form>
+
+		<!-- Thông báo -->
+		<div th:if="${error}" class="message error" th:text="${error}"></div>
+		<div th:if="${message}" class="message success" th:text="${message}"></div>
+	</div>
+</body>
+</html>
