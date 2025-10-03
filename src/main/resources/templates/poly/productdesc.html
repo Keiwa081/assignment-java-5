@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết sản phẩm</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
+    <style>
+        .product-detail-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .product-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .product-header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .product-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+        
+        .product-image {
+            text-align: center;
+        }
+        
+        .product-image img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .product-info {
+            padding: 20px;
+        }
+        
+        .product-info h2 {
+            color: #333;
+            font-size: 2em;
+            margin-bottom: 15px;
+        }
+        
+        .product-price {
+            font-size: 1.8em;
+            color: #e74c3c;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        
+        .product-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+        
+        .product-rating {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .stars {
+            color: #f39c12;
+            font-size: 1.5em;
+            margin-right: 10px;
+        }
+        
+        .rating-number {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .back-button {
+            display: inline-block;
+            background: #3498db;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        
+        .back-button:hover {
+            background: #2980b9;
+        }
+        
+        @media (max-width: 768px) {
+            .product-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .product-header h1 {
+                font-size: 2em;
+            }
+            
+            .product-info h2 {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1rem 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <a href="/poly" style="font-size: 2rem; font-weight: bold; text-decoration: none; color: white;">🛍️ ShopVN</a>
+                
+                <div style="display: flex; gap: 1.5rem;">
+                    <a href="/cart" style="background: rgba(255,255,255,0.2); color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; text-decoration: none; display: inline-block; transition: background 0.3s;">🛒 Giỏ hàng</a>
+                    <a href="/account" style="background: rgba(255,255,255,0.2); color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; text-decoration: none; display: inline-block; transition: background 0.3s;">👤 Tài khoản</a>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <div class="product-detail-container">
+        <div class="product-header">
+            <h1>Thông tin sản phẩm</h1>
+        </div>
+        
+        <!-- Success/Error Message -->
+        <div th:if="${message}" 
+             th:style="${messageType == 'success'} ? 'background: #d4edda; color: #155724; border: 1px solid #c3e6cb;' : 'background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;'"
+             style="padding: 1rem; margin-bottom: 2rem; border-radius: 5px; text-align: center; font-weight: bold;" 
+             th:text="${message}"></div>
+        
+        <div class="product-content">
+            <div class="product-image">
+                <img th:src="${product.imageUrl}" th:alt="${product.name}" />
+            </div>
+            
+            <div class="product-info">
+                <h2 th:text="${product.name}">Tên sản phẩm</h2>
+                <div class="product-price" th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
+                    Giá sản phẩm
+                </div>
+                
+                <div class="product-description" th:text="${product.description}">
+                    Mô tả sản phẩm
+                </div>
+                
+                <div class="product-rating">
+                    <div class="stars">
+                        <span th:each="i : ${#numbers.sequence(1, 5)}">
+                            <span th:if="${i <= product.rating}">★</span>
+                            <span th:if="${i > product.rating}">☆</span>
+                        </span>
+                    </div>
+                    <span class="rating-number" th:text="${product.rating} + '/5'">Đánh giá</span>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; margin-top: 2rem; flex-wrap: wrap;">
+                    <a href="/poly" class="back-button">← Quay lại trang chủ</a>
+                    
+                    <form method="POST" action="/cart/add" style="display: inline;">
+                        <input type="hidden" name="productId" th:value="${product.id}">
+                        <input type="hidden" name="quantity" value="1">
+                        <input type="hidden" name="from" value="product">
+                        <button type="submit" style="background: #28a745; color: white; padding: 12px 24px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 1rem; transition: background 0.3s;" 
+                                onmouseover="this.style.background='#218838'" 
+                                onmouseout="this.style.background='#28a745'">
+                            🛒 Thêm vào giỏ hàng
+                        </button>
+                    </form>
+
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

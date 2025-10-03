@@ -365,6 +365,12 @@
     <div class="container">
         <h1 class="page-title">🛒 Giỏ hàng của bạn</h1>
         
+        <!-- Success/Error Message -->
+        <div th:if="${message}" 
+             th:style="${messageType == 'success'} ? 'background: #d4edda; color: #155724; border: 1px solid #c3e6cb;' : 'background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;'"
+             style="padding: 1rem; margin-bottom: 2rem; border-radius: 5px; text-align: center; font-weight: bold;" 
+             th:text="${message}"></div>
+        
         <div class="cart-container">
             <!-- Cart Header -->
             <div class="cart-header">

@@ -190,6 +190,26 @@
             box-shadow: 0 8px 20px rgba(0,0,0,0.15);
         }
         
+        .product-link {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+            cursor: pointer;
+        }
+        
+        .product-link:hover {
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .product-card .product-image {
+            transition: transform 0.3s ease;
+        }
+        
+        .product-card:hover .product-image {
+            transform: scale(1.05);
+        }
+        
         .product-image {
             width: 100%;
             height: 200px;
@@ -342,26 +362,34 @@
         <a href="/under-construction" class="banner-btn">Mua Ngay</a>
     </div>
     
+    <!-- Success/Error Message -->
+    <div th:if="${message}" 
+         th:style="${messageType == 'success'} ? 'background: #d4edda; color: #155724; border: 1px solid #c3e6cb;' : 'background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;'"
+         style="padding: 1rem; margin: 2rem auto; max-width: 1200px; border-radius: 5px; text-align: center; font-weight: bold;" 
+         th:text="${message}"></div>
+    
     <!-- Products -->
     <div class="container">
         <h2 class="section-title">🔥 Sản phẩm nổi bật</h2>
         
         <div class="products-grid">
             <div class="product-card" th:each="product : ${products}">
-                <img th:src="${product.imageUrl}" 
-                     th:alt="${product.name}" 
-                     class="product-image">
-                
-                <div class="product-name" th:text="${product.name}"></div>
-                <div class="product-desc" th:text="${product.description}"></div>
-                
-                <div class="product-footer">
-                    <div class="product-price" 
-                         th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + '₫'"></div>
-                    <div class="product-rating">
-                        ⭐ <span th:text="${product.rating}"></span>
+                <a th:href="@{/product/{id}(id=${product.id})}" class="product-link">
+                    <img th:src="${product.imageUrl}" 
+                         th:alt="${product.name}" 
+                         class="product-image">
+                    
+                    <div class="product-name" th:text="${product.name}"></div>
+                    <div class="product-desc" th:text="${product.description}"></div>
+                    
+                    <div class="product-footer">
+                        <div class="product-price" 
+                             th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + '₫'"></div>
+                        <div class="product-rating">
+                            ⭐ <span th:text="${product.rating}"></span>
+                        </div>
                     </div>
-                </div>
+                </a>
                 
                 <form method="POST" action="/cart/add" style="display: inline;">
                     <input type="hidden" name="productId" th:value="${product.id}">

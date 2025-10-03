@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.servlet.http.HttpSession;
 import java.util.ArrayList;
@@ -98,7 +99,9 @@ public class CartController {
     @PostMapping("/add")
     public String addToCart(@RequestParam Long productId, 
                            @RequestParam(defaultValue = "1") Integer quantity,
-                           HttpSession session) {
+                           @RequestParam(required = false) String from,
+                           HttpSession session,
+                           RedirectAttributes redirectAttributes) {
         
         @SuppressWarnings("unchecked")
         List<CartItem> cartItems = (List<CartItem>) session.getAttribute("cartItems");
@@ -125,13 +128,33 @@ public class CartController {
                 // Update quantity
                 CartItem item = existingItem.get();
                 item.setQuantity(item.getQuantity() + quantity);
+                redirectAttributes.addFlashAttribute("message", "✅ Đã cập nhật số lượng " + product.getName() + " trong giỏ hàng! (Tổng: " + item.getQuantity() + " sản phẩm)");
+                redirectAttributes.addFlashAttribute("messageType", "success");
             } else {
                 // Add new item
                 cartItems.add(new CartItem(product, quantity));
+                redirectAttributes.addFlashAttribute("message", "✅ Đã thêm " + product.getName() + " vào giỏ hàng thành công!");
+                redirectAttributes.addFlashAttribute("messageType", "success");
             }
+        } else {
+            redirectAttributes.addFlashAttribute("message", "❌ Không tìm thấy sản phẩm!");
+            redirectAttributes.addFlashAttribute("messageType", "error");
         }
         
+        // Always redirect to cart to show added items
         return "redirect:/cart";
+    }
+    
+    // Debug method to check cart contents
+    @GetMapping("/debug")
+    public String debugCart(HttpSession session, Model model) {
+        @SuppressWarnings("unchecked")
+        List<CartItem> cartItems = (List<CartItem>) session.getAttribute("cartItems");
+        
+        model.addAttribute("cartItems", cartItems != null ? cartItems : new ArrayList<>());
+        model.addAttribute("sessionId", session.getId());
+        
+        return "poly/cart";
     }
     
     @PostMapping("/update")

@@ -5,8 +5,10 @@ package poly.edu.controller;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import poly.edu.model.Product;
 
 @Controller
@@ -26,6 +28,17 @@ public class HomeController {
     @GetMapping("/under-construction")
     public String underConstruction() {
         return "poly/under-construction";
+    }
+    
+    @GetMapping("/product/{id}")
+    public String productDetail(@PathVariable Long id, Model model) {
+        Product product = getProductById(id);
+        if (product != null) {
+            model.addAttribute("product", product);
+            return "poly/productdesc";
+        } else {
+            return "poly/under-construction";
+        }
     }
     
     private List<Product> getFeaturedProducts() {
@@ -87,5 +100,12 @@ public class HomeController {
             "Âm thanh", "Đồng hồ", "Phụ kiện", 
             "Nhà cửa", "Thời trang"
         );
+    }
+    
+    private Product getProductById(Long id) {
+        return getFeaturedProducts().stream()
+            .filter(product -> product.getId().equals(id))
+            .findFirst()
+            .orElse(null);
     }
 }
