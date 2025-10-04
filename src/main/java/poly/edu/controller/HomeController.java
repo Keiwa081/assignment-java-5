@@ -41,7 +41,12 @@ public class HomeController {
             return "poly/under-construction";
         }
     }
-    
+
+    @GetMapping("/about")
+    public String aboutPage() {
+        return "poly/about";
+    }
+
     private List<Product> getFeaturedProducts() {
         return Arrays.asList(
             Product.builder()
