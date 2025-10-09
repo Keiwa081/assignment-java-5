@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Giỏ hàng - ShopVN</title>
+    <title>Giỏ hàng - ShopAPKD</title>
+	<link rel="stylesheet" href="/header.css">
+		<link rel="stylesheet" href="/footer.css">
     <style>
         * {
             margin: 0;
@@ -347,19 +349,8 @@
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header>
-        <div class="header-container">
-            <div class="header-top">
-                <a href="/home" class="logo">🛍️ ShopVN</a>
-                
-                <div class="header-actions">
-                    <a href="/cart" class="header-btn">🛒 Giỏ hàng (<span th:text="${itemCount}">0</span>)</a>
-                    <a href="/account" class="header-btn">👤 Tài khoản</a>
-                </div>
-            </div>
-        </div>
-    </header>
+
+	<div th:replace="poly/fragments/header :: header"></div>
     
     <!-- Main Content -->
     <div class="container">
@@ -448,12 +439,8 @@
         </div>
     </div>
     
-    <!-- Footer -->
-    <footer>
-        <div class="footer-container">
-            <p>&copy; 2025 ShopVN. All rights reserved.</p>
-        </div>
-    </footer>
+
+	<div th:replace="poly/fragments/footer :: footer"></div>
     
     <script>
         function updateQuantity(button, change) {

@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Chính sách bảo mật - ShopVN</title>
+    <title>Chính sách bảo mật - ShopAPKD</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -26,11 +26,15 @@
             margin-left: 1.5rem;
         }
     </style>
+	<link rel="stylesheet" href="/header.css">
+		<link rel="stylesheet" href="/footer.css">
 </head>
 <body>
+
+	<div th:replace="poly/fragments/header :: header"></div>
     <div class="container">
         <h1>Chính sách bảo mật</h1>
-        <p><strong>ShopVN</strong> cam kết bảo vệ thông tin cá nhân của khách hàng. Chính sách này giải thích cách chúng tôi thu thập, sử dụng và bảo mật dữ liệu.</p>
+        <p><strong>ShopAPKD</strong> cam kết bảo vệ thông tin cá nhân của khách hàng. Chính sách này giải thích cách chúng tôi thu thập, sử dụng và bảo mật dữ liệu.</p>
         
         <h2>1. Thông tin thu thập</h2>
         <ul>
@@ -60,5 +64,6 @@
 
         <p><i>Cập nhật lần cuối: 04/10/2025</i></p>
     </div>
+	<div th:replace="poly/fragments/footer :: footer"></div>
 </body>
 </html>

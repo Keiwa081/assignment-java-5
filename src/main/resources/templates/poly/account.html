@@ -4,28 +4,12 @@
     <meta charset="UTF-8">
     <title>Trang tài khoản</title>
     <link rel="stylesheet" href="/style.css">
+	<link rel="stylesheet" href="/header.css">
+		<link rel="stylesheet" href="/footer.css">
 </head>
 <body>
 
-    <!-- Header -->
-    <header>
-    	<div class="header-container">
-			<div class="header-top">
-				<a href="/home" class="logo">🛍️ ShopVN</a>
-
-				<div class="search-bar">
-					<input type="text" placeholder="Tìm kiếm sản phẩm, thương hiệu...">
-					<button>Tìm</button>
-				</div>
-
-				<div class="header-actions">
-					<a href="/cart" class="header-btn">🛒 Giỏ hàng</a> 
-					<a href="/account" class="header-btn">👤 Tài khoản</a>
-
-				</div>
-			</div>
-		</div>
-	</header>
+	<div th:replace="poly/fragments/header :: header"></div>
 
     <!-- Account Container -->
     <main>
@@ -48,10 +32,8 @@
         </div>
     </main>
 
-    <!-- Footer -->
-    <footer>
-        <p>© 2025 ShopVN. All rights reserved.</p>
-    </footer>
+
+	<div th:replace="poly/fragments/footer :: footer"></div>
 
 </body>
 </html>

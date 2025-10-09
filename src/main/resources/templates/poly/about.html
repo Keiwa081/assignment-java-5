@@ -3,403 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Về ShopVN - ShopVN</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background-color: #f5f5f5;
-            line-height: 1.6;
-        }
-
-        /* Header */
-        header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 1rem 0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        .header-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-
-        .header-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 2rem;
-            font-weight: bold;
-            text-decoration: none;
-            color: white;
-        }
-
-        .header-actions {
-            display: flex;
-            gap: 1.5rem;
-        }
-
-        .header-btn {
-            background: rgba(255,255,255,0.2);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 20px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            transition: background 0.3s;
-        }
-
-        .header-btn:hover {
-            background: rgba(255,255,255,0.3);
-        }
-
-        /* Navigation */
-        nav {
-            background: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 1rem 20px;
-            display: flex;
-            gap: 2rem;
-            overflow-x: auto;
-        }
-
-        .nav-container a {
-            color: #333;
-            text-decoration: none;
-            white-space: nowrap;
-            padding: 5px 10px;
-            border-radius: 5px;
-            transition: background 0.3s;
-        }
-
-        .nav-container a:hover {
-            background: #f0f0f0;
-        }
-
-        /* Main Content */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 3rem 20px;
-        }
-
-        .page-header {
-            text-align: center;
-            margin-bottom: 4rem;
-        }
-
-        .page-title {
-            font-size: 3rem;
-            color: #333;
-            margin-bottom: 1rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .page-subtitle {
-            font-size: 1.2rem;
-            color: #666;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        /* Content Sections */
-        .content-section {
-            background: white;
-            border-radius: 12px;
-            padding: 3rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-
-        .section-title {
-            font-size: 2rem;
-            color: #333;
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .section-icon {
-            font-size: 2.5rem;
-        }
-
-        .section-content {
-            color: #555;
-            font-size: 1.1rem;
-            line-height: 1.8;
-        }
-
-        .section-content p {
-            margin-bottom: 1.5rem;
-        }
-
-        .section-content ul {
-            margin: 1.5rem 0;
-            padding-left: 2rem;
-        }
-
-        .section-content li {
-            margin-bottom: 0.8rem;
-        }
-
-        /* Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 2rem;
-            margin: 2rem 0;
-        }
-
-        .stat-item {
-            text-align: center;
-            padding: 2rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 12px;
-        }
-
-        .stat-number {
-            font-size: 3rem;
-            font-weight: bold;
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-label {
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
-
-        /* Team Grid */
-        .team-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin: 2rem 0;
-        }
-
-        .team-member {
-            text-align: center;
-            padding: 2rem;
-            background: #f8f9fa;
-            border-radius: 12px;
-            transition: transform 0.3s;
-        }
-
-        .team-member:hover {
-            transform: translateY(-5px);
-        }
-
-        .member-avatar {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            margin: 0 auto 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3rem;
-            color: white;
-        }
-
-        .member-name {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 0.5rem;
-        }
-
-        .member-role {
-            color: #667eea;
-            font-weight: 500;
-            margin-bottom: 1rem;
-        }
-
-        .member-bio {
-            color: #666;
-            font-size: 0.95rem;
-        }
-
-        /* Values Grid */
-        .values-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin: 2rem 0;
-        }
-
-        .value-item {
-            padding: 2rem;
-            background: #f8f9fa;
-            border-radius: 12px;
-            border-left: 4px solid #667eea;
-        }
-
-        .value-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 1rem;
-        }
-
-        .value-description {
-            color: #666;
-        }
-
-        /* CTA Section */
-        .cta-section {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            text-align: center;
-            padding: 4rem 2rem;
-            border-radius: 12px;
-            margin: 3rem 0;
-        }
-
-        .cta-title {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .cta-description {
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-            opacity: 0.9;
-        }
-
-        .cta-buttons {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
-            text-decoration: none;
-            display: inline-block;
-            text-align: center;
-            transition: all 0.3s;
-        }
-
-        .btn-primary {
-            background: white;
-            color: #667eea;
-        }
-
-        .btn-primary:hover {
-            background: #f8f9fa;
-            transform: translateY(-2px);
-        }
-
-        .btn-secondary {
-            background: rgba(255,255,255,0.2);
-            color: white;
-            border: 2px solid white;
-        }
-
-        .btn-secondary:hover {
-            background: white;
-            color: #667eea;
-        }
-
-        /* Footer */
-        footer {
-            background: #2d3748;
-            color: white;
-            padding: 3rem 20px 1rem;
-            margin-top: 4rem;
-        }
-
-        .footer-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            text-align: center;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .page-title {
-                font-size: 2rem;
-            }
-
-            .content-section {
-                padding: 2rem;
-            }
-
-            .section-title {
-                font-size: 1.5rem;
-            }
-
-            .cta-buttons {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .header-top {
-                flex-direction: column;
-                gap: 1rem;
-            }
-        }
-    </style>
+    <title>Về ShopAPKD - ShopAPKD</title>
+	<link rel="stylesheet" href="/header.css">
+		<link rel="stylesheet" href="/footer.css">
 </head>
 <body>
-<!-- Header -->
-<header>
-    <div class="header-container">
-        <div class="header-top">
-            <a href="/poly" class="logo">🛍️ ShopVN</a>
 
-            <div class="header-actions">
-                <a href="/cart" class="header-btn">🛒 Giỏ hàng</a>
-                <a href="/account" class="header-btn">👤 Tài khoản</a>
-            </div>
-        </div>
-    </div>
-</header>
 
-<!-- Navigation -->
-<nav>
-    <div class="nav-container">
-        <a href="/poly">Trang chủ</a>
-        <a href="/about">Về ShopVN</a>
-        <a href="/under-construction">Sản phẩm</a>
-        <a href="/under-construction">Tin tức</a>
-        <a href="/under-construction">Liên hệ</a>
-    </div>
-</nav>
-
+	<div th:replace="poly/fragments/header :: header"></div>
 <!-- Main Content -->
 <div class="container">
     <!-- Page Header -->
     <div class="page-header">
-        <h1 class="page-title">Về ShopVN</h1>
+        <h1 class="page-title">Về ShopAPKD</h1>
         <p class="page-subtitle">
             Chúng tôi cam kết mang đến trải nghiệm mua sắm trực tuyến tốt nhất với chất lượng dịch vụ vượt trội và sản phẩm chính hãng.
         </p>
@@ -409,16 +25,16 @@
     <div class="content-section">
         <h2 class="section-title">
             <span class="section-icon">🏢</span>
-            Giới thiệu về ShopVN
+            Giới thiệu về APKD
         </h2>
         <div class="section-content">
             <p>
-                ShopVN được thành lập vào năm 2020 với sứ mệnh trở thành nền tảng thương mại điện tử hàng đầu tại Việt Nam.
+                ShopAPKD được thành lập vào năm 2020 với sứ mệnh trở thành nền tảng thương mại điện tử hàng đầu tại Việt Nam.
                 Chúng tôi tin rằng mua sắm trực tuyến không chỉ là việc mua bán đơn thuần, mà còn là trải nghiệm toàn diện
                 từ khám phá sản phẩm đến nhận hàng tận nhà.
             </p>
             <p>
-                Với đội ngũ nhân viên trẻ trung, năng động và đầy nhiệt huyết, ShopVN đã và đang phục vụ hàng triệu khách hàng
+                Với đội ngũ nhân viên trẻ trung, năng động và đầy nhiệt huyết, ShopAPKD đã và đang phục vụ hàng triệu khách hàng
                 trên khắp cả nước với các sản phẩm chất lượng cao và dịch vụ khách hàng tận tâm.
             </p>
         </div>
@@ -488,7 +104,7 @@
             Dịch vụ của chúng tôi
         </h2>
         <div class="section-content">
-            <p>ShopVN cung cấp đầy đủ các dịch vụ để đảm bảo trải nghiệm mua sắm hoàn hảo:</p>
+            <p>ShopAPKD cung cấp đầy đủ các dịch vụ để đảm bảo trải nghiệm mua sắm hoàn hảo:</p>
             <ul>
                 <li><strong>Giao hàng nhanh:</strong> Miễn phí giao hàng toàn quốc trong 24-48 giờ</li>
                 <li><strong>Đổi trả dễ dàng:</strong> Chính sách đổi trả linh hoạt trong 30 ngày</li>
@@ -513,7 +129,7 @@
                 <p class="member-role">CEO & Founder</p>
                 <p class="member-bio">
                     Với hơn 10 năm kinh nghiệm trong lĩnh vực thương mại điện tử,
-                    anh A đã dẫn dắt ShopVN từ một startup nhỏ trở thành công ty hàng đầu.
+                    anh A đã dẫn dắt ShopAPKD từ một startup nhỏ trở thành công ty hàng đầu.
                 </p>
             </div>
             <div class="team-member">
@@ -522,7 +138,7 @@
                 <p class="member-role">CTO</p>
                 <p class="member-bio">
                     Chuyên gia công nghệ với kinh nghiệm phát triển các nền tảng e-commerce
-                    quy mô lớn, chị B đảm bảo hệ thống ShopVN luôn ổn định và hiệu quả.
+                    quy mô lớn, chị B đảm bảo hệ thống ShopAPKD luôn ổn định và hiệu quả.
                 </p>
             </div>
             <div class="team-member">
@@ -531,7 +147,7 @@
                 <p class="member-role">Head of Design</p>
                 <p class="member-bio">
                     Với con mắt thẩm mỹ tinh tế và kinh nghiệm thiết kế UX/UI,
-                    anh C tạo ra những trải nghiệm người dùng tuyệt vời trên ShopVN.
+                    anh C tạo ra những trải nghiệm người dùng tuyệt vời trên ShopAPKD.
                 </p>
             </div>
         </div>
@@ -539,9 +155,9 @@
 
     <!-- CTA Section -->
     <div class="cta-section">
-        <h2 class="cta-title">Sẵn sàng trải nghiệm ShopVN?</h2>
+        <h2 class="cta-title">Sẵn sàng trải nghiệm ShopAPKD?</h2>
         <p class="cta-description">
-            Tham gia cùng hàng triệu khách hàng đã tin tưởng và lựa chọn ShopVN
+            Tham gia cùng hàng triệu khách hàng đã tin tưởng và lựa chọn ShopAPKD
             cho nhu cầu mua sắm trực tuyến của mình.
         </p>
         <div class="cta-buttons">
@@ -552,10 +168,7 @@
 </div>
 
 <!-- Footer -->
-<footer>
-    <div class="footer-container">
-        <p>&copy; 2025 ShopVN. All rights reserved.</p>
-    </div>
-</footer>
+
+<div th:replace="poly/fragments/footer :: footer"></div>
 </body>
 </html>

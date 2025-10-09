@@ -1,12 +1,3 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ShopAPKD - Web Mua sắm trực tuyến</title>
-	<link rel="stylesheet" href="/header.css">
-	<link rel="stylesheet" href="/footer.css">
-</head>
 <style>
     * {
         margin: 0;
@@ -329,62 +320,3 @@
         }
     }
 </style>
-<body>
-
-<!-- Gọi header -->
-<div th:replace="poly/fragments/header :: header"></div>
-
-
-
- <main>
-	<!-- Banner -->
-	 <div class="banner">
-	     <h1>Siêu Sale Tháng 10</h1>
-	     <p>Giảm giá lên đến 50% cho tất cả sản phẩm</p>
-	     <a href="/under-construction" class="banner-btn">Mua Ngay</a>
-	 </div>
- <!-- Success/Error Message -->
- <div th:if="${message}" 
-      th:style="${messageType == 'success'} ? 'background: #d4edda; color: #155724; border: 1px solid #c3e6cb;' : 'background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;'"
-      style="padding: 1rem; margin: 2rem auto; max-width: 1200px; border-radius: 5px; text-align: center; font-weight: bold;" 
-      th:text="${message}"></div>
- 
- <!-- Products -->
- <div class="container">
-     <h2 class="section-title">🔥 Sản phẩm nổi bật</h2>
-     
-     <div class="products-grid">
-         <div class="product-card" th:each="product : ${products}">
-             <a th:href="@{/product/{id}(id=${product.id})}" class="product-link">
-                 <img th:src="${product.imageUrl}" 
-                      th:alt="${product.name}" 
-                      class="product-image">
-                 
-                 <div class="product-name" th:text="${product.name}"></div>
-                 <div class="product-desc" th:text="${product.description}"></div>
-                 
-                 <div class="product-footer">
-                     <div class="product-price" 
-                          th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + '₫'"></div>
-                     <div class="product-rating">
-                         ⭐ <span th:text="${product.rating}"></span>
-                     </div>
-                 </div>
-             </a>
-             
-             <form method="POST" action="/cart/add" style="display: inline;">
-                 <input type="hidden" name="productId" th:value="${product.id}">
-                 <input type="hidden" name="quantity" value="1">
-                 <button type="submit" class="add-to-cart">
-                     Thêm vào giỏ
-                 </button>
-             </form>
-         </div>
-     </div>
- </div>
- </main>
-<!-- Gọi footer -->
-<div th:replace="poly/fragments/footer :: footer"></div>
-
-</body>
-</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+<!-- Header Fragment -->
+<header th:fragment="header">
+    <div class="header-container">
+        <div class="header-top">
+            <a href="/home" class="logo">
+                <img src="/photos/logo.png" alt="ShopVN" style="height:100px; vertical-align:middle;"> ShopAPKD
+            </a>
+
+            <div class="search-bar">
+                <form th:action="@{/search}" method="get" style="display:flex; align-items:center;">
+                    <input type="text" name="q" placeholder="Tìm kiếm sản phẩm, thương hiệu..." required>
+                    <button type="submit" style="padding:8px 12px; margin-left:5px;">Tìm</button>
+                </form>
+            </div>
+
+            <div class="header-actions">
+                <a href="/cart" class="header-btn">🛒 Giỏ hàng</a>
+                <a href="/account" class="header-btn">👤 Tài khoản</a>
+            </div>
+        </div>
+    </div>
+	   <!-- Navigation -->
+	<nav>
+	    <div class="nav-container">
+	        <a th:each="category : ${categories}" 
+	        th:href="@{/category/{name}(name=${category})}"
+	        th:text="${category}"></a>
+
+	    </div>
+	</nav>
+
+</header>
+</body>
+</html>

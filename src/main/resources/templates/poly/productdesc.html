@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chi tiết sản phẩm</title>
     <link rel="stylesheet" th:href="@{/style.css}">
+	<link rel="stylesheet" href="/header.css">
+		<link rel="stylesheet" href="/footer.css">
     <style>
         .product-detail-container {
             max-width: 1200px;
@@ -117,19 +119,8 @@
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1rem 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-        <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <a href="/home" style="font-size: 2rem; font-weight: bold; text-decoration: none; color: white;">🛍️ ShopVN</a>
-                
-                <div style="display: flex; gap: 1.5rem;">
-                    <a href="/cart" style="background: rgba(255,255,255,0.2); color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; text-decoration: none; display: inline-block; transition: background 0.3s;">🛒 Giỏ hàng</a>
-                    <a href="/account" style="background: rgba(255,255,255,0.2); color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; text-decoration: none; display: inline-block; transition: background 0.3s;">👤 Tài khoản</a>
-                </div>
-            </div>
-        </div>
-    </header>
+
+	<div th:replace="poly/fragments/header :: header"></div>
     
     <div class="product-detail-container">
         <div class="product-header">
@@ -186,5 +177,7 @@
             </div>
         </div>
     </div>
+
+	<div th:replace="poly/fragments/footer :: footer"></div>
 </body>
 </html>

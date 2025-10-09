@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ShopVN - Mua sắm trực tuyến</title>
+    <title>ShopAPKD - Mua sắm trực tuyến</title>
     <style>
         * {
             margin: 0;
@@ -324,37 +324,14 @@
                 gap: 1rem;
             }
         }
+		
     </style>
+	<link rel="stylesheet" href="/header.css">
+		<link rel="stylesheet" href="/footer.css">
 </head>
 <body>
-    <!-- Header -->
-    <header>
-        <div class="header-container">
-            <div class="header-top">
-                <a href="/home" class="logo">🛍️ ShopVN</a>
-                
-                <div class="search-bar">
-                    <input type="text" placeholder="Tìm kiếm sản phẩm, thương hiệu...">
-                    <button>Tìm</button>
-                </div>
-                
-                <div class="header-actions">
-                    <a href="/cart" class="header-btn">🛒 Giỏ hàng</a>
-                    <a href="/account" class="header-btn">👤 Tài khoản</a>
-                </div>
-            </div>
-        </div>
-    </header>
-    
-    <!-- Navigation -->
-    <nav>
-        <div class="nav-container">
-            <a th:each="category : ${categories}" 
-            th:href="@{/category/{name}(name=${category})}"
-            th:text="${category}"></a>
 
-        </div>
-    </nav>
+	<div th:replace="poly/fragments/header :: header"></div>
      
    <!-- Banner -->
     <div class="banner">
@@ -403,45 +380,7 @@
         </div>
     </div>
     
-    <!-- Footer -->
-    <footer>
-        <div class="footer-container">
-            <div class="footer-section">
-                <h3>Về ShopVN</h3>
-                <a href="/under-construction">Giới thiệu</a>
-                <a href="/under-construction">Tuyển dụng</a>
-                <a href="/under-construction">Điều khoản</a>
-                <a href="/under-construction">Chính sách bảo mật</a>
-            </div>
-            
-            <div class="footer-section">
-                <h3>Hỗ trợ khách hàng</h3>
-                <a href="/under-construction">Trung tâm trợ giúp</a>
-                <a href="/under-construction">Hướng dẫn mua hàng</a>
-                <a href="/under-construction">Chính sách đổi trả</a>
-                <a href="/under-construction">Liên hệ</a>
-            </div>
-            
-            <div class="footer-section">
-                <h3>Thanh toán</h3>
-                <a href="/under-construction">Visa/Mastercard</a>
-                <a href="/under-construction">ATM/Internet Banking</a>
-                <a href="/under-construction">Momo</a>
-                <a href="/under-construction">COD</a>
-            </div>
-            
-            <div class="footer-section">
-                <h3>Theo dõi chúng tôi</h3>
-                <a href="/under-construction">📘 Facebook</a>
-                <a href="/under-construction">📷 Instagram</a>
-                <a href="/under-construction">🐦 Twitter</a>
-                <a href="/under-construction">📺 YouTube</a>
-            </div>
-        </div>
-        
-        <div class="footer-bottom">
-            <p>&copy; 2025 ShopVN. All rights reserved.</p>
-        </div>
-    </footer>
+
+	<div th:replace="poly/fragments/footer :: footer"></div>
 </body>
 </html>
