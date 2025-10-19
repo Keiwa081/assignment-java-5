@@ -2,35 +2,42 @@ package poly.edu.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "accounts")
+@Table(name = "Account")
 public class Account {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "AccountId") // 🔹 khớp đúng tên cột trong SQL
+    private Integer accountId;
 
-    @Column(nullable = false, unique = true, length = 100)
+    @Column(name = "Username", nullable = false, unique = true, length = 100)
     private String username;
 
-    @Column(nullable = false, length = 64)
-    private String password;
-
-    private Boolean sex;
-
-    private LocalDate birth;
-
-    @Column(nullable = false, unique = true, length = 200)
+    @Column(name = "Email", nullable = false, unique = true, length = 200)
     private String email;
 
+    @Column(name = "Password", nullable = false, length = 50)
+    private String password;
+
+    @Column(name = "FullName", length = 200)
     private String fullName;
 
-    private Boolean activated;
+    @Column(name = "Phone", length = 50)
+    private String phone;
+
+    @Column(name = "Address", length = 500)
+    private String address;
+
+    @Column(name = "Active", nullable = false)
+    private Boolean active;
+
+    @Column(name = "CreatedAt", nullable = false)
+    private LocalDateTime createdAt;
 }
