@@ -9,33 +9,18 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "Product")
-public class Product {
+@Table(name = "Category")
+public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ProductId")
-    private Long id;
-
     @Column(name = "CategoryId")
     private Integer categoryId;
 
-    @Column(name = "Name")
+    @Column(name = "Name", unique = true, nullable = false, length = 150)
     private String name;
 
     @Column(name = "Description", columnDefinition = "TEXT")
     private String description;
-
-    @Column(name = "Price")
-    private Double price;
-
-    @Column(name = "Quantity")
-    private Integer quantity;
-
-    @Column(name = "ImageUrl", length = 1000)
-    private String imageUrl;
-
-    @Column(name = "Rating")
-    private Double rating;
 
     @Column(name = "CreatedAt")
     private LocalDateTime createdAt;
