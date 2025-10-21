@@ -74,6 +74,12 @@
             <artifactId>mssql-jdbc</artifactId>
             <version>12.8.1.jre11</version>   <!-- hoặc jre8, jre11, jre17 tùy JDK bạn -->
         </dependency>
+        
+        <!-- Spring Boot Starter Mail -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-mail</artifactId>
+</dependency>
     </dependencies>
 
     <build>

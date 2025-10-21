@@ -15,7 +15,7 @@ public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "AccountId") // 🔹 khớp đúng tên cột trong SQL
-    private Integer accountId;
+    private int AccountId;
 
     @Column(name = "Username", nullable = false, unique = true, length = 100)
     private String username;
@@ -40,4 +40,7 @@ public class Account {
 
     @Column(name = "CreatedAt", nullable = false)
     private LocalDateTime createdAt;
+    
+    @Column(name = "ResetCode", length = 20)
+    private String resetCode;
 }

@@ -5,6 +5,7 @@
 </head>
 <body>
 <!-- Header Fragment -->
+
 <header th:fragment="header">
     <div class="header-container">
         <div class="header-top">
@@ -25,16 +26,16 @@
             </div>
         </div>
     </div>
-	   <!-- Navigation -->
-	<nav>
-	    <div class="nav-container">
-	        <a th:each="category : ${categories}" 
-	        th:href="@{/category/{name}(name=${category})}"
-	        th:text="${category}"></a>
 
-	    </div>
-	</nav>
-
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <a th:each="category : ${categories}" 
+               th:href="@{/category/{name}(name=${category})}"
+               th:text="${category}"></a>
+        </div>
+    </nav>
 </header>
+
 </body>
 </html>

@@ -7,9 +7,11 @@ import poly.edu.model.Account;
 import java.util.Optional;
 
 @Repository
-public interface AccountDAO extends JpaRepository<Account, Long> {
+public interface AccountDAO extends JpaRepository<Account, Integer> {
 
     Optional<Account> findByUsername(String username);
 
     Optional<Account> findByEmail(String email);
+    
+    Optional<Account> findByEmailOrUsername(String email, String username);
 }
