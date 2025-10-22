@@ -27,6 +27,11 @@
 			    <a href="/account/update">Cập nhật thông tin</a>
 			    <a href="/account/doiMatKhau">Đổi mật khẩu</a>
 			    <a href="/account/forgot">Quên mật khẩu</a>
+        <a href="/admin/product/add" 
+   class="add-product-btn" 
+   th:if="${isAdmin}">
+   ➕ Thêm sản phẩm mới
+</a>
 			    <a href="/account/logout" class="logout-btn">Đăng xuất</a>
 			</div>
 
