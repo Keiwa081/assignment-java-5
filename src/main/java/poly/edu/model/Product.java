@@ -10,30 +10,40 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "products")
+@Table(name = "Product")
 public class Product {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "ProductId")
+    private Integer productId;
 
-    @Column(nullable = false, length = 300)
+    @Column(name = "CategoryId", nullable = false)
+    private Integer categoryId;
+
+    @Column(name = "Name", nullable = false, length = 300)
     private String name;
-    
-    private String category;
 
-    @Column(length = 500)
+    @Column(name = "Description", length = 500)
     private String description;
 
-    @Column(nullable = false)
+    @Column(name = "Price", nullable = false)
     private Double price;
 
-    @Column(nullable = false)
+    @Column(name = "Quantity", nullable = false)
     private Integer quantity;
 
+    @Column(name = "ImageUrl", length = 1000)
     private String imageUrl;
 
+    @Column(name = "Rating")
     private Double rating;
 
+    @Column(name = "CreatedAt", nullable = false)
     private LocalDateTime createdAt;
+
+    // Relationship with Category
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "CategoryId", insertable = false, updatable = false)
+    private Category category;
 }

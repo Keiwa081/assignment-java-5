@@ -387,7 +387,7 @@
                             <input type="number" 
                                    class="quantity-input" 
                                    th:value="${item.quantity}"
-                                   th:data-product-id="${item.product.id}"
+                                   th:data-product-id="${item.product.productId}"
                                    min="1" 
                                    max="99"
                                    onchange="updateQuantityDirect(this)">
@@ -397,9 +397,9 @@
                     
                     <div class="item-actions">
                         <div class="subtotal" 
-                             th:text="${#numbers.formatDecimal(item.subtotal, 0, 'COMMA', 0, 'POINT')} + '₫'"></div>
+                             th:text="${#numbers.formatDecimal(item.product.price * item.quantity, 0, 'COMMA', 0, 'POINT')} + '₫'"></div>
                         <button class="remove-btn" 
-                                th:onclick="'removeItem(' + ${item.product.id} + ')'">
+                                th:onclick="'removeItem(' + ${item.product.productId} + ')'">
                             Xóa
                         </button>
                     </div>

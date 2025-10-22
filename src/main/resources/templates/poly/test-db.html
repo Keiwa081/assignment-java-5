@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Test - ShopAPKD</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .message {
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .product-item {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background: #f9f9f9;
+        }
+        .product-name {
+            font-weight: bold;
+            font-size: 1.2em;
+            color: #333;
+        }
+        .product-details {
+            color: #666;
+            margin: 5px 0;
+        }
+        .back-link {
+            display: inline-block;
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .back-link:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Database Connection Test</h1>
+    
+    <div class="message" 
+         th:class="${message.contains('successful')} ? 'message success' : 'message error'"
+         th:text="${message}">Test Message</div>
+    
+    <div th:if="${products != null and !products.empty}">
+        <h2>Products Found (<span th:text="${products.size()}">0</span>)</h2>
+        <div class="product-item" th:each="product : ${products}">
+            <div class="product-name" th:text="${product.name}">Product Name</div>
+            <div class="product-details">ID: <span th:text="${product.productId}">0</span></div>
+            <div class="product-details">Price: <span th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + '₫'">0₫</span></div>
+            <div class="product-details">Quantity: <span th:text="${product.quantity}">0</span></div>
+            <div class="product-details">Rating: <span th:text="${product.rating}">0</span></div>
+            <div class="product-details">Category ID: <span th:text="${product.categoryId}">0</span></div>
+        </div>
+    </div>
+    
+    <a href="/home" class="back-link">← Back to Home</a>
+</body>
+</html>

@@ -1,29 +1,73 @@
 
 package poly.edu.controller;
 
-
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import java.util.Arrays;
+import org.springframework.web.bind.annotation.RequestParam;
+import poly.edu.model.Category;
+import poly.edu.model.Product;
+import poly.edu.repository.ProductRepository;
+import poly.edu.service.CategoryService;
+import poly.edu.service.ProductService;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import org.springframework.web.bind.annotation.RequestParam;
-import poly.edu.model.Product;
 
 @Controller
 public class HomeController {
     
+    @Autowired
+    private ProductService productService;
+    
+    @Autowired
+    private CategoryService categoryService;
+    
+    @Autowired
+    private ProductRepository productRepository;
+    
     @GetMapping("/home")
-    public String home(Model model) {
-        List<Product> featuredProducts = getFeaturedProducts();
-        List<String> categories = getCategories();
-        
-        model.addAttribute("products", featuredProducts);
-        model.addAttribute("categories", categories);
-        
-        return "poly/index";
+    public String home(Model model, @RequestParam(defaultValue = "0") int page) {
+        try {
+            // Use direct repository access to avoid service layer issues
+            Pageable pageable = PageRequest.of(page, 12);
+            Page<Product> products = productRepository.findAll(pageable);
+            
+            System.out.println("DEBUG: Found " + products.getTotalElements() + " products");
+            System.out.println("DEBUG: Current page has " + products.getContent().size() + " products");
+            
+            // Simple categories list for now
+            List<String> categories = List.of(
+                "Điện thoại", "Laptop", "Máy tính bảng", 
+                "Tai Nghe", "Máy ảnh", "Đồng hồ", "Chuột", "Gaming"
+            );
+            
+            model.addAttribute("products", products.getContent());
+            model.addAttribute("categories", categories);
+            model.addAttribute("currentPage", page);
+            model.addAttribute("totalPages", products.getTotalPages());
+            model.addAttribute("totalProducts", products.getTotalElements());
+            
+            return "poly/index";
+        } catch (Exception e) {
+            System.err.println("ERROR loading products: " + e.getMessage());
+            e.printStackTrace();
+            
+            // Fallback: return empty model
+            model.addAttribute("products", new ArrayList<>());
+            model.addAttribute("categories", new ArrayList<>());
+            model.addAttribute("currentPage", 0);
+            model.addAttribute("totalPages", 0);
+            model.addAttribute("totalProducts", 0);
+            
+            return "poly/index";
+        }
     }
     
     @GetMapping("/under-construction")
@@ -32,10 +76,10 @@ public class HomeController {
     }
     
     @GetMapping("/product/{id}")
-    public String productDetail(@PathVariable Long id, Model model) {
-        Product product = getProductById(id);
-        if (product != null) {
-            model.addAttribute("product", product);
+    public String productDetail(@PathVariable Integer id, Model model) {
+        Optional<Product> productOpt = productService.getProductById(id);
+        if (productOpt.isPresent()) {
+            model.addAttribute("product", productOpt.get());
             return "poly/productdesc";
         } else {
             return "poly/under-construction";
@@ -46,94 +90,46 @@ public class HomeController {
     public String aboutPage() {
         return "poly/about";
     }
-
-    private List<Product> getFeaturedProducts() {
-        return Arrays.asList(
-            Product.builder()
-                .id(1L)
-                .name("Laptop Dell XPS 13")
-                .description("Laptop cao cấp, màn hình 13 inch")
-                .price(25990000.0)
-                .imageUrl("https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=400")
-                .rating(4.5)
-                .category("Laptop")
-                .build(),
-            Product.builder()
-                .id(2L)
-                .name("iPhone 15 Pro")
-                .description("Điện thoại thông minh mới nhất")
-                .price(29990000.0)
-                .imageUrl("https://www.apple.com/newsroom/images/2023/09/apple-unveils-iphone-15-pro-and-iphone-15-pro-max/article/Apple-iPhone-15-Pro-lineup-hero-230912_Full-Bleed-Image.jpg.xlarge.jpg")
-                .rating(4.8)
-                .category("Điện thoại")
-                .build(),
-            Product.builder()
-                .id(3L)
-                .name("Sony WH-1000XM5")
-                .description("Tai nghe chống ồn cao cấp")
-                .price(8990000.0)
-                .imageUrl("https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=400")
-                .rating(4.7)
-                .category("Tai nghe")
-                .build(),
-            Product.builder()
-                .id(4L)
-                .name("Samsung Galaxy Watch 6")
-                .description("Đồng hồ thông minh")
-                .price(6990000.0)
-                .imageUrl("https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400")
-                .rating(4.4)
-                .category("Đồng hồ")
-                .build(),
-            Product.builder()
-                .id(5L)
-                .name("iPad Pro M2")
-                .description("Máy tính bảng cao cấp")
-                .price(24990000.0)
-                .imageUrl("https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400")
-                .rating(4.6)
-                .category("Máy tính bảng")
-                .build(),
-            Product.builder()
-                .id(6L)
-                .name("Canon EOS R6")
-                .description("Máy ảnh mirrorless chuyên nghiệp")
-                .price(55990000.0)
-                .imageUrl("https://bizweb.dktcdn.net/100/378/894/files/r5-vs-r6-2.jpg?v=1594623430159")
-                .rating(4.9)
-                .category("Máy ảnh")
-                .build()
-        );
+    
+    @GetMapping("/test-db")
+    public String testDatabase(Model model) {
+        try {
+            // Test database connection by getting all products
+            List<Product> allProducts = productRepository.findAll();
+            model.addAttribute("message", "Database connection successful! Found " + allProducts.size() + " products.");
+            model.addAttribute("products", allProducts);
+            return "poly/test-db";
+        } catch (Exception e) {
+            model.addAttribute("message", "Database connection failed: " + e.getMessage());
+            model.addAttribute("products", new ArrayList<>());
+            return "poly/test-db";
+        }
     }
-    
-    private List<String> getCategories() {
-        return Arrays.asList(
-            "Điện thoại", "Laptop", "Máy tính bảng", 
-            "Tai Nghe", "Máy ảnh", "Đồng hồ", "Chuột"
-        );
-    }
-    
-    private Product getProductById(Long id) {
-        return getFeaturedProducts().stream()
-            .filter(product -> product.getId().equals(id))
-            .findFirst()
-            .orElse(null);
-    }
-    
-        @GetMapping("/category/{name}")
-    public String categoryPage(@PathVariable String name, Model model) {
-    List<Product> featuredProducts = getFeaturedProducts();
-    
-    List<Product> filteredProducts = featuredProducts.stream()
-            .filter(p -> p.getCategory().equalsIgnoreCase(name))
-            .toList();
 
-    model.addAttribute("products", filteredProducts);
-    model.addAttribute("categories", getCategories());
-    model.addAttribute("categoryName", name);
-
-    return "poly/category";
-}
+    
+    @GetMapping("/category/{name}")
+    public String categoryPage(@PathVariable String name, Model model, @RequestParam(defaultValue = "0") int page) {
+        // Find category by name
+        Optional<Category> categoryOpt = categoryService.getCategoryByName(name);
+        
+        if (categoryOpt.isPresent()) {
+            Category category = categoryOpt.get();
+            // Get products by category with pagination
+            Page<Product> products = productService.getProductsByCategory(category.getCategoryId(), page, 12);
+            List<Category> categories = categoryService.getCategoriesWithProducts();
+            
+            model.addAttribute("products", products.getContent());
+            model.addAttribute("categories", categories);
+            model.addAttribute("categoryName", name);
+            model.addAttribute("currentPage", page);
+            model.addAttribute("totalPages", products.getTotalPages());
+            model.addAttribute("totalProducts", products.getTotalElements());
+            
+            return "poly/category";
+        } else {
+            return "poly/under-construction";
+        }
+    }
         @GetMapping("/terms")
     public String terms() {
         return "poly/terms";
@@ -144,20 +140,29 @@ public class HomeController {
         return "poly/privacy";
     }
     
-        @GetMapping("/search")
-    public String search(@RequestParam("q") String keyword, Model model) {
-        List<Product> featuredProducts = getFeaturedProducts();
-
-        // Lọc sản phẩm theo tên có chứa keyword (không phân biệt hoa thường)
-        List<Product> searchResults = featuredProducts.stream()
-                .filter(p -> p.getName().toLowerCase().contains(keyword.toLowerCase()))
-                .toList();
-
-        model.addAttribute("products", searchResults);
-        model.addAttribute("categories", getCategories());
+    @GetMapping("/search")
+    public String search(@RequestParam("q") String keyword, Model model, @RequestParam(defaultValue = "0") int page) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            // If no keyword, show featured products
+            Page<Product> featuredProducts = productService.getFeaturedProducts(page, 12);
+            model.addAttribute("products", featuredProducts.getContent());
+            model.addAttribute("currentPage", page);
+            model.addAttribute("totalPages", featuredProducts.getTotalPages());
+            model.addAttribute("totalProducts", featuredProducts.getTotalElements());
+        } else {
+            // Search products with pagination
+            Page<Product> searchResults = productService.searchProducts(keyword, page, 12);
+            model.addAttribute("products", searchResults.getContent());
+            model.addAttribute("currentPage", page);
+            model.addAttribute("totalPages", searchResults.getTotalPages());
+            model.addAttribute("totalProducts", searchResults.getTotalElements());
+        }
+        
+        List<Category> categories = categoryService.getCategoriesWithProducts();
+        model.addAttribute("categories", categories);
         model.addAttribute("keyword", keyword);
 
-        return "poly/search"; // trang search.html
+        return "poly/search";
     }
 
 

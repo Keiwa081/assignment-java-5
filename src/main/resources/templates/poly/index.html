@@ -269,6 +269,52 @@
         background: #5568d3;
     }
     
+    .add-to-cart.disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+    
+    .add-to-cart.disabled:hover {
+        background: #ccc;
+    }
+    
+    /* Pagination */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 2rem 0;
+        gap: 1rem;
+    }
+    
+    .pagination a, .pagination span {
+        padding: 8px 16px;
+        border: 1px solid #ddd;
+        text-decoration: none;
+        color: #667eea;
+        border-radius: 4px;
+        transition: all 0.3s;
+    }
+    
+    .pagination a:hover {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+    
+    .pagination .current {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+    
+    .pagination .disabled {
+        color: #ccc;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+    
     /* Footer */
     footer {
         background: #2d3748;
@@ -349,13 +395,22 @@
       style="padding: 1rem; margin: 2rem auto; max-width: 1200px; border-radius: 5px; text-align: center; font-weight: bold;" 
       th:text="${message}"></div>
  
+ <!-- Debug Info -->
+<!-- <div style="background: #f0f0f0; padding: 10px; margin: 20px; border-radius: 5px;">-->
+<!--     <strong>DEBUG INFO:</strong><br>-->
+<!--     Total Products: <span th:text="${totalProducts}">0</span><br>-->
+<!--     Current Page: <span th:text="${currentPage}">0</span><br>-->
+<!--     Total Pages: <span th:text="${totalPages}">0</span><br>-->
+<!--     Products on this page: <span th:text="${products.size()}">0</span>-->
+<!-- </div>-->
+
  <!-- Products -->
  <div class="container">
      <h2 class="section-title">🔥 Sản phẩm nổi bật</h2>
      
      <div class="products-grid">
          <div class="product-card" th:each="product : ${products}">
-             <a th:href="@{/product/{id}(id=${product.id})}" class="product-link">
+             <a th:href="@{/product/{id}(id=${product.productId})}" class="product-link">
                  <img th:src="${product.imageUrl}" 
                       th:alt="${product.name}" 
                       class="product-image">
@@ -373,13 +428,31 @@
              </a>
              
              <form method="POST" action="/cart/add" style="display: inline;">
-                 <input type="hidden" name="productId" th:value="${product.id}">
+                 <input type="hidden" name="productId" th:value="${product.productId}">
                  <input type="hidden" name="quantity" value="1">
-                 <button type="submit" class="add-to-cart">
-                     Thêm vào giỏ
+                 <button type="submit" class="add-to-cart" 
+                         th:disabled="${product.quantity <= 0}"
+                         th:class="${product.quantity <= 0} ? 'add-to-cart disabled' : 'add-to-cart'">
+                     <span th:if="${product.quantity <= 0}">Hết hàng</span>
+                     <span th:if="${product.quantity > 0}">Thêm vào giỏ</span>
                  </button>
              </form>
          </div>
+     </div>
+     
+     <!-- Pagination -->
+     <div class="pagination" th:if="${totalPages > 1}">
+         <a th:if="${currentPage > 0}" th:href="@{/home(page=${currentPage - 1})}">« Trước</a>
+         <span th:if="${currentPage == 0}" class="disabled">« Trước</span>
+         
+         <a th:each="page : ${#numbers.sequence(0, totalPages - 1)}"
+            th:if="${page != currentPage}"
+            th:href="@{/home(page=${page})}"
+            th:text="${page + 1}">1</a>
+         <span th:if="${currentPage == page}" class="current" th:text="${page + 1}">1</span>
+         
+         <a th:if="${currentPage < totalPages - 1}" th:href="@{/home(page=${currentPage + 1})}">Tiếp »</a>
+         <span th:if="${currentPage == totalPages - 1}" class="disabled">Tiếp »</span>
      </div>
  </div>
  </main>
