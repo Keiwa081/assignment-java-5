@@ -9,8 +9,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import jakarta.servlet.http.HttpSession;
+import poly.edu.dao.AccountDAO;
+import poly.edu.model.Account;
 import poly.edu.model.Cart;
 import poly.edu.service.CartService;
+import poly.edu.service.OrderService;
 
 import java.util.List;
 
@@ -21,12 +25,49 @@ public class CartController {
     @Autowired
     private CartService cartService;
     
-    // For now, we'll use a default account ID (1) since we don't have authentication yet
-    private static final Integer DEFAULT_ACCOUNT_ID = 1;
+    @Autowired
+    private OrderService orderService;
+    
+    @Autowired
+    private AccountDAO accountDAO;
+    
+    // ==================== HELPER METHODS ====================
+    
+    /**
+     * Get current logged-in account from session
+     */
+    private Account getCurrentAccount(HttpSession session) {
+        return (Account) session.getAttribute("account");
+    }
+    
+    /**
+     * Get current account ID from session
+     */
+    private Integer getCurrentAccountId(HttpSession session) {
+        Account account = getCurrentAccount(session);
+        return account != null ? account.getAccountId() : null;
+    }
+    
+    /**
+     * Check if user is logged in
+     */
+    private boolean isLoggedIn(HttpSession session) {
+        return getCurrentAccount(session) != null;
+    }
+    
+    // ==================== CART DISPLAY ====================
     
     @GetMapping
-    public String cartPage(Model model) {
-        List<Cart> cartItems = cartService.getCartItems(DEFAULT_ACCOUNT_ID);
+    public String cartPage(HttpSession session, Model model, RedirectAttributes redirectAttributes) {
+        // Check if user is logged in
+        if (!isLoggedIn(session)) {
+            redirectAttributes.addFlashAttribute("message", "❌ Vui lòng đăng nhập để xem giỏ hàng!");
+            redirectAttributes.addFlashAttribute("messageType", "error");
+            return "redirect:/login";
+        }
+        
+        Integer accountId = getCurrentAccountId(session);
+        List<Cart> cartItems = cartService.getCartItems(accountId);
         
         double total = cartItems.stream()
                 .mapToDouble(item -> item.getProduct().getPrice() * item.getQuantity())
@@ -39,13 +80,24 @@ public class CartController {
         return "poly/cart";
     }
     
+    // ==================== CART OPERATIONS ====================
+    
     @PostMapping("/add")
     public String addToCart(@RequestParam Integer productId, 
                            @RequestParam(defaultValue = "1") Integer quantity,
                            @RequestParam(required = false) String from,
+                           HttpSession session,
                            RedirectAttributes redirectAttributes) {
         
-        String result = cartService.addToCart(DEFAULT_ACCOUNT_ID, productId, quantity);
+        // Check if user is logged in
+        if (!isLoggedIn(session)) {
+            redirectAttributes.addFlashAttribute("message", "❌ Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!");
+            redirectAttributes.addFlashAttribute("messageType", "error");
+            return "redirect:/login";
+        }
+        
+        Integer accountId = getCurrentAccountId(session);
+        String result = cartService.addToCart(accountId, productId, quantity);
         
         if (result.equals("out_of_stock")) {
             redirectAttributes.addFlashAttribute("message", "❌ Sản phẩm đã hết hàng!");
@@ -77,9 +129,16 @@ public class CartController {
     @PostMapping("/update")
     public String updateQuantity(@RequestParam Integer productId, 
                                 @RequestParam Integer quantity,
+                                HttpSession session,
                                 RedirectAttributes redirectAttributes) {
         
-        String result = cartService.updateCartItemQuantity(DEFAULT_ACCOUNT_ID, productId, quantity);
+        // Check if user is logged in
+        if (!isLoggedIn(session)) {
+            return "redirect:/login";
+        }
+        
+        Integer accountId = getCurrentAccountId(session);
+        String result = cartService.updateCartItemQuantity(accountId, productId, quantity);
         
         if (result.equals("removed")) {
             redirectAttributes.addFlashAttribute("message", "✅ Đã xóa sản phẩm khỏi giỏ hàng!");
@@ -100,8 +159,17 @@ public class CartController {
     }
     
     @PostMapping("/remove")
-    public String removeItem(@RequestParam Integer productId, RedirectAttributes redirectAttributes) {
-        boolean success = cartService.removeFromCart(DEFAULT_ACCOUNT_ID, productId);
+    public String removeItem(@RequestParam Integer productId, 
+                            HttpSession session,
+                            RedirectAttributes redirectAttributes) {
+        
+        // Check if user is logged in
+        if (!isLoggedIn(session)) {
+            return "redirect:/login";
+        }
+        
+        Integer accountId = getCurrentAccountId(session);
+        boolean success = cartService.removeFromCart(accountId, productId);
         
         if (success) {
             redirectAttributes.addFlashAttribute("message", "✅ Đã xóa sản phẩm khỏi giỏ hàng!");
@@ -115,8 +183,15 @@ public class CartController {
     }
     
     @PostMapping("/clear")
-    public String clearCart(RedirectAttributes redirectAttributes) {
-        boolean success = cartService.clearCart(DEFAULT_ACCOUNT_ID);
+    public String clearCart(HttpSession session, RedirectAttributes redirectAttributes) {
+        
+        // Check if user is logged in
+        if (!isLoggedIn(session)) {
+            return "redirect:/login";
+        }
+        
+        Integer accountId = getCurrentAccountId(session);
+        boolean success = cartService.clearCart(accountId);
         
         if (success) {
             redirectAttributes.addFlashAttribute("message", "✅ Đã xóa tất cả sản phẩm khỏi giỏ hàng!");
@@ -128,5 +203,116 @@ public class CartController {
         
         return "redirect:/cart";
     }
+
+    // ==================== CHECKOUT FUNCTIONALITY ====================
     
+    /**
+     * Display checkout page (GET request from cart)
+     */
+    @GetMapping("/checkout")
+    public String checkoutPage(HttpSession session, Model model, RedirectAttributes redirectAttributes) {
+        
+        // Check if user is logged in
+        if (!isLoggedIn(session)) {
+            redirectAttributes.addFlashAttribute("message", "❌ Vui lòng đăng nhập để thanh toán!");
+            redirectAttributes.addFlashAttribute("messageType", "error");
+            return "redirect:/login";
+        }
+        
+        Integer accountId = getCurrentAccountId(session);
+        List<Cart> cartItems = cartService.getCartItems(accountId);
+        
+        // Check if cart is empty
+        if (cartItems.isEmpty()) {
+            redirectAttributes.addFlashAttribute("message", "❌ Giỏ hàng của bạn đang trống!");
+            redirectAttributes.addFlashAttribute("messageType", "error");
+            return "redirect:/cart";
+        }
+        
+        // Calculate total
+        double total = cartItems.stream()
+                .mapToDouble(item -> item.getProduct().getPrice() * item.getQuantity())
+                .sum();
+        
+        // Get account information from session (or database if needed)
+        Account account = getCurrentAccount(session);
+        
+        // If account data in session is incomplete, fetch from database
+        if (account.getPhone() == null || account.getAddress() == null) {
+            account = accountDAO.findById(accountId).orElse(account);
+        }
+        
+        model.addAttribute("cartItems", cartItems);
+        model.addAttribute("total", total);
+        model.addAttribute("account", account);
+        
+        return "poly/checkout";
+    }
+    
+    /**
+     * Process checkout (POST request)
+     */
+    @PostMapping("/checkout")
+    public String processCheckout(@RequestParam String shippingAddress,
+                                  @RequestParam String phone,
+                                  @RequestParam(required = false) String note,
+                                  HttpSession session,
+                                  RedirectAttributes redirectAttributes) {
+        
+        // Check if user is logged in
+        if (!isLoggedIn(session)) {
+            redirectAttributes.addFlashAttribute("message", "❌ Vui lòng đăng nhập để đặt hàng!");
+            redirectAttributes.addFlashAttribute("messageType", "error");
+            return "redirect:/login";
+        }
+        
+        Integer accountId = getCurrentAccountId(session);
+        
+        // Validate inputs
+        if (shippingAddress == null || shippingAddress.trim().isEmpty()) {
+            redirectAttributes.addFlashAttribute("message", "❌ Vui lòng nhập địa chỉ giao hàng!");
+            redirectAttributes.addFlashAttribute("messageType", "error");
+            return "redirect:/cart/checkout";
+        }
+        
+        if (phone == null || phone.trim().isEmpty()) {
+            redirectAttributes.addFlashAttribute("message", "❌ Vui lòng nhập số điện thoại!");
+            redirectAttributes.addFlashAttribute("messageType", "error");
+            return "redirect:/cart/checkout";
+        }
+        
+        // Create order
+        String result = orderService.createOrderFromCart(accountId, shippingAddress, phone, note);
+        
+        if (result.equals("empty_cart")) {
+            redirectAttributes.addFlashAttribute("message", "❌ Giỏ hàng của bạn đang trống!");
+            redirectAttributes.addFlashAttribute("messageType", "error");
+            return "redirect:/cart";
+        } else if (result.startsWith("out_of_stock:")) {
+            String productName = result.split(":")[1];
+            redirectAttributes.addFlashAttribute("message", "❌ Sản phẩm '" + productName + "' đã hết hàng!");
+            redirectAttributes.addFlashAttribute("messageType", "error");
+            return "redirect:/cart/checkout";
+        } else if (result.startsWith("insufficient_stock:")) {
+            String[] parts = result.split(":");
+            String productName = parts[1];
+            String availableQty = parts[2];
+            redirectAttributes.addFlashAttribute("message", "❌ Sản phẩm '" + productName + "' chỉ còn " + availableQty + " sản phẩm trong kho!");
+            redirectAttributes.addFlashAttribute("messageType", "error");
+            return "redirect:/cart/checkout";
+        } else if (result.startsWith("product_not_found:")) {
+            redirectAttributes.addFlashAttribute("message", "❌ Không tìm thấy sản phẩm!");
+            redirectAttributes.addFlashAttribute("messageType", "error");
+            return "redirect:/cart/checkout";
+        } else if (result.startsWith("success:")) {
+            String orderId = result.split(":")[1];
+            redirectAttributes.addFlashAttribute("message", "✅ Đặt hàng thành công! Mã đơn hàng: #" + orderId);
+            redirectAttributes.addFlashAttribute("messageType", "success");
+            return "redirect:/orders/" + orderId;
+        } else {
+            redirectAttributes.addFlashAttribute("message", "❌ Đã có lỗi xảy ra khi đặt hàng!");
+            redirectAttributes.addFlashAttribute("messageType", "error");
+            return "redirect:/cart/checkout";
+        }
+    }
 }

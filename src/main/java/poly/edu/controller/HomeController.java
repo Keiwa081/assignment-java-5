@@ -35,40 +35,30 @@ public class HomeController {
     @GetMapping("/home")
     public String home(Model model, @RequestParam(defaultValue = "0") int page) {
         try {
-            // Use direct repository access to avoid service layer issues
             Pageable pageable = PageRequest.of(page, 12);
             Page<Product> products = productRepository.findAll(pageable);
-            
-            System.out.println("DEBUG: Found " + products.getTotalElements() + " products");
-            System.out.println("DEBUG: Current page has " + products.getContent().size() + " products");
-            
-            // Simple categories list for now
-            List<String> categories = List.of(
-                "Điện thoại", "Laptop", "Máy tính bảng", 
-                "Tai Nghe", "Máy ảnh", "Đồng hồ", "Chuột", "Gaming"
-            );
-            
+
+            // ✅ Lấy category từ database
+            List<Category> categories = categoryService.getCategoriesWithProducts();
+
             model.addAttribute("products", products.getContent());
             model.addAttribute("categories", categories);
             model.addAttribute("currentPage", page);
             model.addAttribute("totalPages", products.getTotalPages());
             model.addAttribute("totalProducts", products.getTotalElements());
-            
+
             return "poly/index";
         } catch (Exception e) {
-            System.err.println("ERROR loading products: " + e.getMessage());
             e.printStackTrace();
-            
-            // Fallback: return empty model
             model.addAttribute("products", new ArrayList<>());
             model.addAttribute("categories", new ArrayList<>());
             model.addAttribute("currentPage", 0);
             model.addAttribute("totalPages", 0);
             model.addAttribute("totalProducts", 0);
-            
             return "poly/index";
         }
     }
+
     
     @GetMapping("/under-construction")
     public String underConstruction() {
@@ -79,12 +69,20 @@ public class HomeController {
     public String productDetail(@PathVariable Integer id, Model model) {
         Optional<Product> productOpt = productService.getProductById(id);
         if (productOpt.isPresent()) {
-            model.addAttribute("product", productOpt.get());
+            Product product = productOpt.get();
+            
+            List<Category> categories = categoryService.getCategoriesWithProducts();
+            model.addAttribute("categories", categories);
+
+            // ✅ Add product vào model
+            model.addAttribute("product", product);
+
             return "poly/productdesc";
         } else {
             return "poly/under-construction";
         }
     }
+
 
     @GetMapping("/about")
     public String aboutPage() {
@@ -108,28 +106,30 @@ public class HomeController {
 
     
     @GetMapping("/category/{name}")
-    public String categoryPage(@PathVariable String name, Model model, @RequestParam(defaultValue = "0") int page) {
-        // Find category by name
-        Optional<Category> categoryOpt = categoryService.getCategoryByName(name);
+    public String viewCategory(
+            @PathVariable String name,
+            @RequestParam(defaultValue = "0") int page,
+            Model model) {
+
+        Category category = categoryService.getCategoryByName(name)
+            .orElseThrow(() -> new RuntimeException("Category not found"));
+
+        Pageable pageable = PageRequest.of(page, 12);
+        Page<Product> products = productRepository.findByCategoryId(category.getCategoryId(), pageable);
+
         
-        if (categoryOpt.isPresent()) {
-            Category category = categoryOpt.get();
-            // Get products by category with pagination
-            Page<Product> products = productService.getProductsByCategory(category.getCategoryId(), page, 12);
-            List<Category> categories = categoryService.getCategoriesWithProducts();
-            
-            model.addAttribute("products", products.getContent());
-            model.addAttribute("categories", categories);
-            model.addAttribute("categoryName", name);
-            model.addAttribute("currentPage", page);
-            model.addAttribute("totalPages", products.getTotalPages());
-            model.addAttribute("totalProducts", products.getTotalElements());
-            
-            return "poly/category";
-        } else {
-            return "poly/under-construction";
-        }
+        List<Category> categories = categoryService.getCategoriesWithProducts();
+        model.addAttribute("categories", categories);
+
+        model.addAttribute("categoryName", category.getName());
+        model.addAttribute("products", products.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", products.getTotalPages());
+
+        return "poly/category";
     }
+
+
         @GetMapping("/terms")
     public String terms() {
         return "poly/terms";
@@ -143,27 +143,26 @@ public class HomeController {
     @GetMapping("/search")
     public String search(@RequestParam("q") String keyword, Model model, @RequestParam(defaultValue = "0") int page) {
         if (keyword == null || keyword.trim().isEmpty()) {
-            // If no keyword, show featured products
             Page<Product> featuredProducts = productService.getFeaturedProducts(page, 12);
             model.addAttribute("products", featuredProducts.getContent());
             model.addAttribute("currentPage", page);
             model.addAttribute("totalPages", featuredProducts.getTotalPages());
             model.addAttribute("totalProducts", featuredProducts.getTotalElements());
         } else {
-            // Search products with pagination
             Page<Product> searchResults = productService.searchProducts(keyword, page, 12);
             model.addAttribute("products", searchResults.getContent());
             model.addAttribute("currentPage", page);
             model.addAttribute("totalPages", searchResults.getTotalPages());
             model.addAttribute("totalProducts", searchResults.getTotalElements());
         }
-        
+
         List<Category> categories = categoryService.getCategoriesWithProducts();
         model.addAttribute("categories", categories);
         model.addAttribute("keyword", keyword);
 
         return "poly/search";
     }
+
 
 
 }

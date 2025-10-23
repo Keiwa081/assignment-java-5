@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi Tiết Đơn Hàng #<span th:text="${order?.orderId}">1</span> - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .product-item {
+            border-bottom: 1px solid #dee2e6;
+            padding: 1rem 0;
+        }
+        .product-item:last-child {
+            border-bottom: none;
+        }
+        .status-timeline {
+            position: relative;
+            padding-left: 40px;
+        }
+        .status-timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #dee2e6;
+        }
+        .status-step {
+            position: relative;
+            padding: 15px 0;
+        }
+        .status-step::before {
+            content: '';
+            position: absolute;
+            left: -29px;
+            top: 20px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #dee2e6;
+            border: 2px solid #fff;
+        }
+        .status-step.active::before {
+            background: #28a745;
+        }
+        .status-step.current::before {
+            background: #007bff;
+            width: 16px;
+            height: 16px;
+            left: -31px;
+            top: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container my-5">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-receipt"></i> Chi Tiết Đơn Hàng #<span th:text="${order.orderId}">1</span></h2>
+            <a th:href="@{/admin/orders}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Quay lại
+            </a>
+        </div>
+        
+        <!-- Flash Messages -->
+        <div th:if="${message}" th:class="'alert alert-' + ${messageType == 'success' ? 'success' : 'danger'} + ' alert-dismissible fade show'" role="alert">
+            <span th:text="${message}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        
+        <div class="row">
+            <!-- Left Column: Order Info & Items -->
+            <div class="col-md-8">
+                <!-- Order Information -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-info-circle"></i> Thông Tin Đơn Hàng</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Mã đơn hàng:</strong> #<span th:text="${order.orderId}">1</span></p>
+                                <p><strong>Ngày đặt:</strong> <span th:text="${#temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm')}">Date</span></p>
+                                <p><strong>Khách hàng:</strong> <span th:text="${order.account != null ? order.account.fullName : 'N/A'}">Customer</span></p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Số điện thoại:</strong> <span th:text="${order.phone}">Phone</span></p>
+                                <p><strong>Địa chỉ giao hàng:</strong><br>
+                                    <span th:text="${order.shippingAddress}">Address</span>
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div th:if="${order.note != null && !#strings.isEmpty(order.note)}" class="mt-3">
+                            <p><strong>Ghi chú từ khách hàng:</strong></p>
+                            <div class="alert alert-info mb-0">
+                                <i class="fas fa-sticky-note"></i> <span th:text="${order.note}">Note</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Order Items -->
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-box-open"></i> Sản Phẩm Trong Đơn</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="product-item" th:each="detail : ${orderDetails}">
+                            <div class="row align-items-center">
+                                <div class="col-md-2">
+                                    <img th:src="${detail.product.imageUrl}" 
+                                         th:alt="${detail.product.name}"
+                                         class="img-fluid rounded"
+                                         style="max-height: 80px; object-fit: cover;">
+                                </div>
+                                <div class="col-md-5">
+                                    <h6 class="mb-1" th:text="${detail.product.name}">Product name</h6>
+                                    <small class="text-muted">
+                                        Đơn giá: <span th:text="${#numbers.formatDecimal(detail.unitPrice, 0, 'COMMA', 0, 'POINT')} + ' ₫'">Price</span>
+                                    </small>
+                                </div>
+                                <div class="col-md-2 text-center">
+                                    <p class="mb-0"><strong>SL: <span th:text="${detail.quantity}">1</span></strong></p>
+                                </div>
+                                <div class="col-md-3 text-end">
+                                    <h6 class="text-primary mb-0" 
+                                        th:text="${#numbers.formatDecimal(detail.unitPrice * detail.quantity, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
+                                        Total
+                                    </h6>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <h5>Tổng đơn hàng:</h5>
+                            <h5 class="text-success" th:text="${#numbers.formatDecimal(order.total, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Column: Status & Actions -->
+            <div class="col-md-4">
+                <!-- Current Status -->
+                <div class="card mb-4">
+                    <div class="card-header" th:classappend="${order.statusId == 1 ? 'bg-warning text-dark' : 
+                                                             (order.statusId == 2 ? 'bg-info text-white' : 
+                                                             (order.statusId == 3 ? 'bg-primary text-white' : 
+                                                             (order.statusId == 4 ? 'bg-success text-white' : 'bg-danger text-white')))}">
+                        <h5 class="mb-0"><i class="fas fa-flag"></i> Trạng Thái Hiện Tại</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <h3 th:text="${order.statusId == 1 ? '🟡 Chờ xử lý' : 
+                                     (order.statusId == 2 ? '🔵 Đang xử lý' : 
+                                     (order.statusId == 3 ? '🟢 Đang giao' : 
+                                     (order.statusId == 4 ? '✅ Đã giao' : '🔴 Đã hủy')))}">
+                            Status
+                        </h3>
+                    </div>
+                </div>
+                
+                <!-- Update Status Form -->
+                <div class="card mb-4" th:if="${order.statusId != 5 && order.statusId != 4}">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0"><i class="fas fa-edit"></i> Cập Nhật Trạng Thái</h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/admin/orders/{id}/update-status(id=${order.orderId})}" method="post">
+                            <div class="mb-3">
+                                <label class="form-label">Chọn trạng thái mới:</label>
+                                <select name="newStatus" class="form-select" required>
+                                    <option value="">-- Chọn trạng thái --</option>
+                                    <option value="2" th:if="${order.statusId == 1}">🔵 Đang xử lý</option>
+                                    <option value="3" th:if="${order.statusId == 2}">🟢 Đang giao</option>
+                                    <option value="4" th:if="${order.statusId == 3}">✅ Đã giao</option>
+                                    <option value="5" th:if="${order.statusId < 4}">🔴 Hủy đơn</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-check"></i> Cập nhật
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="card mb-4" th:if="${order.statusId < 4 && order.statusId != 5}">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-bolt"></i> Thao Tác Nhanh</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <form th:if="${order.statusId == 1}" 
+                                  th:action="@{/admin/orders/{id}/process(id=${order.orderId})}" 
+                                  method="post">
+                                <button type="submit" class="btn btn-info w-100">
+                                    <i class="fas fa-play"></i> Bắt đầu xử lý
+                                </button>
+                            </form>
+                            
+                            <form th:if="${order.statusId == 2}" 
+                                  th:action="@{/admin/orders/{id}/ship(id=${order.orderId})}" 
+                                  method="post">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-truck"></i> Giao cho vận chuyển
+                                </button>
+                            </form>
+                            
+                            <form th:if="${order.statusId == 3}" 
+                                  th:action="@{/admin/orders/{id}/deliver(id=${order.orderId})}" 
+                                  method="post"
+                                  onsubmit="return confirm('Xác nhận đơn hàng đã được giao thành công?');">
+                                <button type="submit" class="btn btn-success w-100">
+                                    <i class="fas fa-check-circle"></i> Xác nhận đã giao
+                                </button>
+                            </form>
+                            
+                            <hr th:if="${order.statusId < 3}">
+                            
+                            <form th:if="${order.statusId < 3}" 
+                                  th:action="@{/admin/orders/{id}/cancel(id=${order.orderId})}" 
+                                  method="post"
+                                  onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn hàng này?');">
+                                <button type="submit" class="btn btn-danger w-100">
+                                    <i class="fas fa-times-circle"></i> Hủy đơn hàng
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Status Timeline -->
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0"><i class="fas fa-history"></i> Tiến Trình</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="status-timeline">
+                            <div class="status-step" th:classappend="${order.statusId >= 1 ? 'active' : ''} + ' ' + ${order.statusId == 1 ? 'current' : ''}">
+                                <strong>Chờ xử lý</strong>
+                                <br><small class="text-muted">Đơn hàng đã được tạo</small>
+                            </div>
+                            <div class="status-step" th:classappend="${order.statusId >= 2 ? 'active' : ''} + ' ' + ${order.statusId == 2 ? 'current' : ''}">
+                                <strong>Đang xử lý</strong>
+                                <br><small class="text-muted">Chuẩn bị hàng</small>
+                            </div>
+                            <div class="status-step" th:classappend="${order.statusId >= 3 ? 'active' : ''} + ' ' + ${order.statusId == 3 ? 'current' : ''}">
+                                <strong>Đang giao</strong>
+                                <br><small class="text-muted">Đơn vị vận chuyển đang giao</small>
+                            </div>
+                            <div class="status-step" th:classappend="${order.statusId >= 4 ? 'active' : ''} + ' ' + ${order.statusId == 4 ? 'current' : ''}">
+                                <strong>Đã giao</strong>
+                                <br><small class="text-muted">Giao hàng thành công</small>
+                            </div>
+                            <div class="status-step" th:if="${order.statusId == 5}" th:classappend="'active current'">
+                                <strong class="text-danger">Đã hủy</strong>
+                                <br><small class="text-muted">Đơn hàng đã bị hủy</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

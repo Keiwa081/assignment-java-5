@@ -431,11 +431,22 @@
             </div>
             
             <!-- Cart Actions -->
-            <div class="cart-actions" th:if="${cartItems != null and !cartItems.empty}">
-                <a href="/home" class="btn btn-secondary">Tiếp tục mua sắm</a>
-                <button class="btn btn-danger" onclick="clearCart()">Xóa giỏ hàng</button>
-                <button class="btn btn-primary">Thanh toán</button>
-            </div>
+			<div class="cart-actions" th:if="${cartItems != null and !cartItems.empty}">
+			    <a href="/home" class="btn btn-secondary">Tiếp tục mua sắm</a>
+			
+			    <form action="/cart/clear" method="post" style="display:inline;">
+			        <button type="submit" class="btn btn-danger"
+			                onclick="return confirm('Bạn có chắc muốn xóa tất cả sản phẩm khỏi giỏ hàng?')">
+			            Xóa giỏ hàng
+			        </button>
+			    </form>
+			
+			    <!-- Fixed: Use GET request to go to checkout page -->
+			    <a href="/cart/checkout" class="btn btn-primary">
+			        Thanh toán
+			    </a>
+			</div>
+
         </div>
     </div>
     

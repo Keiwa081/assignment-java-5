@@ -29,6 +29,9 @@ public class Category {
     private LocalDateTime createdAt;
 
     // Relationship with Products
+ // ✅ Ngăn vòng lặp vô hạn
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
     private List<Product> products;
 }

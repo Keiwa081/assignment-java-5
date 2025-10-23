@@ -374,6 +374,43 @@
             gap: 1rem;
         }
     }
+    
+    .pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 25px;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.page-btn {
+    display: inline-block;
+    padding: 8px 12px;
+    border-radius: 6px;
+    background-color: #f0f0f0;
+    color: #333;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+    font-weight: 500;
+}
+
+.page-btn:hover {
+    background-color: #dcdcdc;
+}
+
+.page-btn.active {
+    background-color: #4a4af4;
+    color: white;
+    font-weight: bold;
+}
+
+.page-btn.disabled {
+    background-color: #e0e0e0;
+    color: #999;
+    pointer-events: none;
+}
+    
 </style>
 <body>
 
@@ -441,19 +478,27 @@
      </div>
      
      <!-- Pagination -->
-     <div class="pagination" th:if="${totalPages > 1}">
-         <a th:if="${currentPage > 0}" th:href="@{/home(page=${currentPage - 1})}">« Trước</a>
-         <span th:if="${currentPage == 0}" class="disabled">« Trước</span>
-         
-         <a th:each="page : ${#numbers.sequence(0, totalPages - 1)}"
-            th:if="${page != currentPage}"
-            th:href="@{/home(page=${page})}"
-            th:text="${page + 1}">1</a>
-         <span th:if="${currentPage == page}" class="current" th:text="${page + 1}">1</span>
-         
-         <a th:if="${currentPage < totalPages - 1}" th:href="@{/home(page=${currentPage + 1})}">Tiếp »</a>
-         <span th:if="${currentPage == totalPages - 1}" class="disabled">Tiếp »</span>
-     </div>
+	<div class="pagination" th:if="${totalPages > 1}">
+	    <!-- Nút về trước -->
+	    <a th:if="${currentPage > 0}"
+	       th:href="@{/home(page=${currentPage - 1})}"
+	       class="page-btn">« Trước</a>
+	    <span th:if="${currentPage == 0}" class="page-btn disabled">« Trước</span>
+	
+	    <!-- Các số trang -->
+	    <a th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+	       th:href="@{/home(page=${i})}"
+	       th:text="${i + 1}"
+	       th:classappend="${i == currentPage} ? 'active' : ''"
+	       class="page-btn"></a>
+	
+	    <!-- Nút tiếp theo -->
+	    <a th:if="${currentPage < totalPages - 1}"
+	       th:href="@{/home(page=${currentPage + 1})}"
+	       class="page-btn">Tiếp »</a>
+	    <span th:if="${currentPage == totalPages - 1}" class="page-btn disabled">Tiếp »</span>
+	</div>
+
  </div>
  </main>
 <!-- Gọi footer -->

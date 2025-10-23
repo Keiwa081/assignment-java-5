@@ -133,10 +133,9 @@
              style="padding: 1rem; margin-bottom: 2rem; border-radius: 5px; text-align: center; font-weight: bold;" 
              th:text="${message}"></div>
         
-        <div class="product-content">
-            <div class="product-image">
-                <img th:src="${product.imageUrl}" th:alt="${product.name}" />
-            </div>
+        <div class="product-image d-flex justify-content-center align-items-center border rounded bg-white" style="width:400px;height:400px;overflow:hidden;">
+		    <img th:src="${product.imageUrl}" th:alt="${product.name}" style="width:100%;height:100%;object-fit:contain;">
+		</div>
             
             <div class="product-info">
                 <h2 th:text="${product.name}">Tên sản phẩm</h2>

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Đơn Hàng - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .order-row {
+            transition: background-color 0.2s;
+        }
+        .order-row:hover {
+            background-color: #f8f9fa;
+        }
+        .status-badge {
+            min-width: 100px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid my-4">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-boxes"></i> Quản Lý Đơn Hàng</h2>
+            <a th:href="@{/admin/dashboard}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Về Dashboard
+            </a>
+        </div>
+        
+        <!-- Flash Messages -->
+        <div th:if="${message}" th:class="'alert alert-' + ${messageType == 'success' ? 'success' : 'danger'} + ' alert-dismissible fade show'" role="alert">
+            <span th:text="${message}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        
+        <!-- Filter -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form th:action="@{/admin/orders}" method="get" class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Lọc theo trạng thái:</label>
+                        <select name="statusFilter" class="form-select" onchange="this.form.submit()">
+                            <option value="">Tất cả đơn hàng</option>
+                            <option value="1" th:selected="${statusFilter == 1}">🟡 Chờ xử lý</option>
+                            <option value="2" th:selected="${statusFilter == 2}">🔵 Đang xử lý</option>
+                            <option value="3" th:selected="${statusFilter == 3}">🟢 Đang giao</option>
+                            <option value="4" th:selected="${statusFilter == 4}">✅ Đã giao</option>
+                            <option value="5" th:selected="${statusFilter == 5}">🔴 Đã hủy</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Orders Table -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-list"></i> Danh Sách Đơn Hàng</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Mã ĐH</th>
+                                <th>Ngày đặt</th>
+                                <th>Khách hàng</th>
+                                <th>Số điện thoại</th>
+                                <th>Tổng tiền</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${orders.isEmpty()}">
+                                <td colspan="7" class="text-center py-4 text-muted">
+                                    <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                                    Không có đơn hàng nào
+                                </td>
+                            </tr>
+                            <tr th:each="order : ${orders}" class="order-row">
+                                <td><strong>#<span th:text="${order.orderId}">1</span></strong></td>
+                                <td><span th:text="${#temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm')}">Date</span></td>
+                                <td><span th:text="${order.account != null ? order.account.fullName : 'N/A'}">Customer</span></td>
+                                <td><span th:text="${order.phone}">Phone</span></td>
+                                <td><strong class="text-primary" th:text="${#numbers.formatDecimal(order.total, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</strong></td>
+                                <td>
+                                    <span th:class="'badge status-badge ' + 
+                                        ${order.statusId == 1 ? 'bg-warning text-dark' : 
+                                        (order.statusId == 2 ? 'bg-info' : 
+                                        (order.statusId == 3 ? 'bg-primary' : 
+                                        (order.statusId == 4 ? 'bg-success' : 'bg-danger')))}" 
+                                          th:text="${order.statusId == 1 ? '🟡 Chờ xử lý' : 
+                                                   (order.statusId == 2 ? '🔵 Đang xử lý' : 
+                                                   (order.statusId == 3 ? '🟢 Đang giao' : 
+                                                   (order.statusId == 4 ? '✅ Đã giao' : '🔴 Đã hủy')))}">
+                                        Status
+                                    </span>
+                                </td>
+                                <td>
+                                    <a th:href="@{/admin/orders/{id}(id=${order.orderId})}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Statistics -->
+        <div class="row mt-4">
+            <div class="col-md-3">
+                <div class="card text-center bg-warning bg-opacity-10">
+                    <div class="card-body">
+                        <h3 class="text-warning" th:text="${pendingCount}">0</h3>
+                        <p class="mb-0">Chờ xử lý</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center bg-info bg-opacity-10">
+                    <div class="card-body">
+                        <h3 class="text-info" th:text="${processingCount}">0</h3>
+                        <p class="mb-0">Đang xử lý</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center bg-primary bg-opacity-10">
+                    <div class="card-body">
+                        <h3 class="text-primary" th:text="${shippedCount}">0</h3>
+                        <p class="mb-0">Đang giao</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center bg-success bg-opacity-10">
+                    <div class="card-body">
+                        <h3 class="text-success" th:text="${deliveredCount}">0</h3>
+                        <p class="mb-0">Đã giao</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

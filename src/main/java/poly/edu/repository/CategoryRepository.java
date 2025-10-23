@@ -20,6 +20,7 @@ public interface CategoryRepository extends JpaRepository<Category, Integer> {
     // Find categories with products
     @Query("SELECT DISTINCT c FROM Category c JOIN c.products p WHERE p.quantity > 0")
     List<Category> findCategoriesWithAvailableProducts();
+    
 }
 
 

@@ -7,6 +7,115 @@
 	<link rel="stylesheet" href="/header.css">
 		<link rel="stylesheet" href="/footer.css">
         <style>
+        .container {
+		    max-width: 1200px;
+		    margin: 0 auto;
+		    padding: 20px;
+		}
+		
+		.section-title {
+		    font-size: 24px;
+		    font-weight: bold;
+		    margin-bottom: 20px;
+		}
+		
+		.products-grid {
+		    display: grid;
+		    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+		    gap: 20px;
+		}
+		
+		.product-card {
+		    background: #fff;
+		    border-radius: 15px;
+		    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+		    padding: 15px;
+		    text-align: center;
+		    transition: transform 0.2s ease, box-shadow 0.2s ease;
+		}
+		
+		.product-card:hover {
+		    transform: translateY(-5px);
+		    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+		}
+		
+		.product-image {
+		    width: 100%;
+		    height: 200px;
+		    object-fit: cover;
+		    border-radius: 10px;
+		    margin-bottom: 10px;
+		}
+		
+		.product-name {
+		    font-weight: bold;
+		    font-size: 16px;
+		    color: #333;
+		    margin-bottom: 5px;
+		}
+		
+		.product-desc {
+		    color: #777;
+		    font-size: 14px;
+		    height: 40px;
+		    overflow: hidden;
+		}
+		
+		.product-footer {
+		    display: flex;
+		    justify-content: space-between;
+		    align-items: center;
+		    margin-top: 10px;
+		}
+		
+		.product-price {
+		    font-weight: bold;
+		    color: #007bff;
+		}
+		
+		.add-to-cart {
+		    background-color: #4a4af4;
+		    color: white;
+		    border: none;
+		    border-radius: 10px;
+		    padding: 8px 12px;
+		    margin-top: 10px;
+		    cursor: pointer;
+		    transition: background 0.2s;
+		}
+		
+		.add-to-cart:hover {
+		    background-color: #2f2fd8;
+		}
+		
+		/* PHÂN TRANG */
+		.pagination {
+		    display: flex;
+		    justify-content: center;
+		    align-items: center;
+		    margin-top: 25px;
+		    gap: 5px;
+		}
+		
+		.page-btn {
+		    display: inline-block;
+		    padding: 8px 12px;
+		    border-radius: 6px;
+		    background-color: #f0f0f0;
+		    color: #333;
+		    text-decoration: none;
+		    transition: background-color 0.2s ease;
+		}
+		
+		.page-btn:hover {
+		    background-color: #dcdcdc;
+		}
+		
+		.page-btn.active {
+		    background-color: #4a4af4;
+		    color: white;
+		    font-weight: bold;
+		}
         * {
             margin: 0;
             padding: 0;
@@ -334,37 +443,54 @@
 	<div th:replace="poly/fragments/header :: header"></div>
 
     <!-- Nội dung trang tìm kiếm -->
-    <main class="container">
-        <h2 class="section-title">🔍 Kết quả tìm kiếm</h2>
+<main class="container">
+    <h2 class="section-title">🔍 Kết quả tìm kiếm cho "<span th:text="${keyword}"></span>"</h2>
+
+    <div th:if="${products != null and #lists.size(products) > 0}">
+        <!-- Lưới sản phẩm -->
         <div class="products-grid">
-            <div th:if="${products != null}">
-                <div class="product-card" th:each="product : ${products}">
-                    <a th:href="@{/product/{id}(id=${product.id})}" class="product-link">
-                        <img th:src="${product.imageUrl}" 
-                             th:alt="${product.name}" 
-                             class="product-image">
-                        <div class="product-name" th:text="${product.name}"></div>
-                        <div class="product-desc" th:text="${product.description}"></div>
-                        <div class="product-footer">
-                            <div class="product-price" 
-                                 th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + '₫'"></div>
-                            <div class="product-rating">
-                                ⭐ <span th:text="${product.rating}"></span>
-                            </div>
-                        </div>
-                    </a>
-                    <form method="POST" action="/cart/add" style="display: inline;">
-                        <input type="hidden" name="productId" th:value="${product.id}">
-                        <input type="hidden" name="quantity" value="1">
-                        <button type="submit" class="add-to-cart">
-                            Thêm vào giỏ
-                        </button>
-                    </form>
-                </div>
+            <div class="product-card" th:each="product : ${products}">
+                <a th:href="@{/product/{id}(id=${product.productId})}" class="product-link">
+                    <img th:src="${product.imageUrl}" th:alt="${product.name}" class="product-image">
+                    <div class="product-name" th:text="${product.name}"></div>
+                    <div class="product-desc" th:text="${product.description}"></div>
+
+                    <div class="product-footer">
+                        <div class="product-price" 
+                             th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + '₫'"></div>
+                        <div class="product-rating">⭐ <span th:text="${product.rating}"></span></div>
+                    </div>
+                </a>
+
+                <form method="POST" action="/cart/add" style="display: inline;">
+                    <input type="hidden" name="productId" th:value="${product.productId}">
+                    <input type="hidden" name="quantity" value="1">
+                    <button type="submit" class="add-to-cart">Thêm vào giỏ</button>
+                </form>
             </div>
-            <p th:if="${products == null}">Không tìm thấy sản phẩm nào.</p>
         </div>
-    </main>
+
+        <!-- PHÂN TRANG -->
+        <div class="pagination">
+            <a th:if="${currentPage > 0}"
+               th:href="@{/search(q=${keyword}, page=${currentPage - 1})}"
+               class="page-btn">«</a>
+
+            <a th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+               th:href="@{/search(q=${keyword}, page=${i})}"
+               th:text="${i + 1}"
+               th:classappend="${i == currentPage} ? 'active' : ''"
+               class="page-btn"></a>
+
+            <a th:if="${currentPage < totalPages - 1}"
+               th:href="@{/search(q=${keyword}, page=${currentPage + 1})}"
+               class="page-btn">»</a>
+        </div>
+    </div>
+
+    <p th:if="${products == null or #lists.size(products) == 0}">Không tìm thấy sản phẩm nào.</p>
+</main>
+
 
 
 	<div th:replace="poly/fragments/footer :: footer"></div>

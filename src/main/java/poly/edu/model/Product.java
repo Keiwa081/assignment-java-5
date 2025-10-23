@@ -43,6 +43,9 @@ public class Product {
     private LocalDateTime createdAt;
 
     // Relationship with Category
+ // ✅ Tránh vòng lặp vô hạn trong toString() và equals/hashCode
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "CategoryId", insertable = false, updatable = false)
     private Category category;
