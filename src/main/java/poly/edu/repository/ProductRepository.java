@@ -42,4 +42,22 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     // Find featured products (high rating and available)
     @Query("SELECT p FROM Product p WHERE p.rating >= 4.0 AND p.quantity > 0 ORDER BY p.rating DESC")
     Page<Product> findFeaturedProducts(Pageable pageable);
+    
+ // Tìm sản phẩm theo category
+    // Tìm sản phẩm theo tên
+    List<Product> findByNameContaining(String name);
+    
+    // Tìm sản phẩm có promotion
+    @Query("SELECT p FROM Product p WHERE p.promotionId IS NOT NULL")
+    Page<Product> findProductsWithPromotion(Pageable pageable);
+    
+    // Tìm sản phẩm có promotion và promotion đang active
+    @Query("SELECT p FROM Product p JOIN p.promotion pr " +
+           "WHERE p.promotionId IS NOT NULL AND pr.status = true " +
+           "AND pr.startDate <= CURRENT_DATE AND pr.endDate >= CURRENT_DATE")
+    Page<Product> findProductsWithActivePromotion(Pageable pageable);
+    
+    // Đếm sản phẩm có promotion
+    @Query("SELECT COUNT(p) FROM Product p WHERE p.promotionId IS NOT NULL")
+    long countProductsWithPromotion();
 }

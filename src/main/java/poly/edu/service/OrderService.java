@@ -38,7 +38,6 @@ public class OrderService {
      */
     public List<Order> getOrdersByAccount(Integer accountId) {
         if (accountId == null) {
-            // For admin: get all orders
             return orderRepository.findAllByOrderByOrderDateDesc();
         }
         return orderRepository.findByAccountIdOrderByOrderDateDesc(accountId);
@@ -67,6 +66,7 @@ public class OrderService {
 
     /**
      * Create order from cart
+     * ✅ FIX: Sử dụng giá đã giảm (discounted price) thay vì giá gốc
      */
     @Transactional
     public String createOrderFromCart(Integer accountId, String shippingAddress, String phone, String note) {
@@ -100,14 +100,15 @@ public class OrderService {
                     return "insufficient_stock:" + product.getName() + ":" + product.getQuantity();
                 }
 
-                // Calculate total
-                double itemTotal = product.getPrice() * cartItem.getQuantity();
+                // ✅ FIX: Sử dụng giá đã giảm thay vì giá gốc
+                Double finalPrice = product.getDiscountedPrice(); // Thay vì product.getPrice()
+                double itemTotal = finalPrice * cartItem.getQuantity();
                 totalAmount += itemTotal;
 
                 OrderDetail detail = OrderDetail.builder()
                         .productId(product.getProductId())
                         .quantity(cartItem.getQuantity())
-                        .unitPrice(product.getPrice())
+                        .unitPrice(finalPrice) // ✅ Lưu giá đã giảm
                         .build();
                 
                 orderDetails.add(detail);
@@ -117,7 +118,7 @@ public class OrderService {
             Order order = Order.builder()
                     .accountId(accountId)
                     .orderDate(LocalDateTime.now())
-                    .statusId(1)  // ✅ Mặc định: 1 = Pending (Chờ xử lý)
+                    .statusId(1)
                     .total(totalAmount)
                     .shippingAddress(shippingAddress)
                     .phone(phone)
@@ -168,21 +169,17 @@ public class OrderService {
 
             Order order = orderOpt.get();
 
-            // Check if order belongs to account
             if (!order.getAccountId().equals(accountId)) {
                 return false;
             }
 
-            // Only allow canceling if status = 1 (Pending)
             if (!Integer.valueOf(1).equals(order.getStatusId())) {
                 return false;
             }
 
-            // Update status to Cancelled (5)
             order.setStatusId(5);
             orderRepository.save(order);
 
-            // Restore product quantities
             List<OrderDetail> orderDetails = orderDetailRepository.findByOrderId(orderId);
             for (OrderDetail detail : orderDetails) {
                 Product product = productRepository.findById(detail.getProductId()).orElse(null);
@@ -202,12 +199,6 @@ public class OrderService {
 
     /**
      * Update order status (by admin)
-     * Status codes:
-     * 1 = Pending (Chờ xử lý)
-     * 2 = Processing (Đang xử lý)
-     * 3 = Shipped (Đang giao)
-     * 4 = Delivered (Đã giao)
-     * 5 = Cancelled (Đã hủy)
      */
     @Transactional
     public boolean updateOrderStatus(Integer orderId, Integer statusId) {
@@ -221,7 +212,6 @@ public class OrderService {
             Order order = orderOpt.get();
             Integer oldStatus = order.getStatusId();
             
-            // If cancelling, restore product quantities
             if (statusId == 5 && oldStatus != 5) {
                 List<OrderDetail> orderDetails = orderDetailRepository.findByOrderId(orderId);
                 for (OrderDetail detail : orderDetails) {
@@ -244,51 +234,30 @@ public class OrderService {
         }
     }
 
-    /**
-     * Get total orders count for account
-     */
     public long getTotalOrdersCount(Integer accountId) {
         return orderRepository.countByAccountId(accountId);
     }
 
-    /**
-     * Get total amount spent by account
-     */
     public Double getTotalAmountSpent(Integer accountId) {
         return orderRepository.getTotalAmountByAccountId(accountId);
     }
 
-    /**
-     * Get orders by StatusId
-     */
     public List<Order> getOrdersByStatusId(Integer statusId) {
         return orderRepository.findByStatusIdOrderByOrderDateDesc(statusId);
     }
 
-    /**
-     * Get orders by account and StatusId
-     */
     public List<Order> getOrdersByAccountAndStatusId(Integer accountId, Integer statusId) {
         return orderRepository.findByAccountIdAndStatusIdOrderByOrderDateDesc(accountId, statusId);
     }
     
-    /**
-     * Count orders by status
-     */
     public long countOrdersByStatus(Integer statusId) {
         return orderRepository.countByStatusId(statusId);
     }
     
-    /**
-     * Get total revenue (from delivered orders only)
-     */
     public Double getTotalRevenue() {
         return orderRepository.getTotalRevenue();
     }
     
-    /**
-     * Get orders in date range
-     */
     public List<Order> getOrdersByDateRange(LocalDateTime startDate, LocalDateTime endDate) {
         return orderRepository.findOrdersByDateRange(startDate, endDate);
     }

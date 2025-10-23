@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sản phẩm Khuyến mãi - ShopAPKD</title>
+    <link rel="stylesheet" href="/header.css">
+    <link rel="stylesheet" href="/footer.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+        
+        .promo-banner {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+            padding: 4rem 20px;
+            text-align: center;
+        }
+        
+        .promo-banner h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .promo-banner p {
+            font-size: 1.3rem;
+            margin-bottom: 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 20px;
+        }
+        
+        .section-title {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            color: #333;
+            text-align: center;
+        }
+        
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+        
+        .product-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        
+        .promotion-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            z-index: 10;
+            animation: bounce 1s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        .product-link {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .product-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            transition: transform 0.3s;
+        }
+        
+        .product-card:hover .product-image {
+            transform: scale(1.05);
+        }
+        
+        .product-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+        
+        .product-desc {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        
+        .price-section {
+            margin-bottom: 1rem;
+        }
+        
+        .original-price {
+            text-decoration: line-through;
+            color: #999;
+            font-size: 1rem;
+            margin-right: 10px;
+        }
+        
+        .discounted-price {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #ff6b6b;
+        }
+        
+        .product-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .product-rating {
+            color: #ffa500;
+            font-size: 0.9rem;
+        }
+        
+        .add-to-cart {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 1rem;
+            width: 100%;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+        
+        .add-to-cart:hover {
+            background: linear-gradient(135deg, #5568d3 0%, #6a3d8f 100%);
+        }
+        
+        .add-to-cart.disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        
+        .no-products {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+            font-size: 1.2rem;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 25px;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        
+        .page-btn {
+            display: inline-block;
+            padding: 8px 12px;
+            border-radius: 6px;
+            background-color: #f0f0f0;
+            color: #333;
+            text-decoration: none;
+            transition: background-color 0.2s ease;
+            font-weight: 500;
+        }
+        
+        .page-btn:hover {
+            background-color: #dcdcdc;
+        }
+        
+        .page-btn.active {
+            background-color: #ff6b6b;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .page-btn.disabled {
+            background-color: #e0e0e0;
+            color: #999;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Gọi header -->
+<div th:replace="poly/fragments/header :: header"></div>
+
+<main>
+    <!-- Promotion Banner -->
+    <div class="promo-banner">
+        <h1>🔥 KHUYẾN MÃI ĐẶC BIỆT 🔥</h1>
+        <p>Giảm giá cực sốc cho các sản phẩm được chọn lọc</p>
+    </div>
+    
+    <!-- Success/Error Message -->
+    <div th:if="${message}" 
+         th:style="${messageType == 'success'} ? 'background: #d4edda; color: #155724; border: 1px solid #c3e6cb;' : 'background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;'"
+         style="padding: 1rem; margin: 2rem auto; max-width: 1200px; border-radius: 5px; text-align: center; font-weight: bold;" 
+         th:text="${message}"></div>
+    
+    <!-- Products -->
+    <div class="container">
+        <h2 class="section-title">🎁 Sản phẩm đang giảm giá</h2>
+        
+        <div class="products-grid" th:if="${!#lists.isEmpty(products)}">
+            <div class="product-card" th:each="product : ${products}">
+                <!-- Promotion Badge -->
+                <div class="promotion-badge" th:if="${product.promotion != null && product.promotion.discount != null}">
+                    <i class="fas fa-fire"></i>
+                    -<span th:text="${#numbers.formatPercent(product.promotion.discount, 0, 0)}"></span>
+                </div>
+                
+                <a th:href="@{/product/{id}(id=${product.productId})}" class="product-link">
+                    <img th:src="${product.imageUrl}" 
+                         th:alt="${product.name}" 
+                         class="product-image">
+                    
+                    <div class="product-name" th:text="${product.name}"></div>
+                    <div class="product-desc" th:text="${product.description}"></div>
+                    
+                    <!-- Price Section -->
+                    <div class="price-section">
+                        <!-- Original Price -->
+                        <span class="original-price" 
+                              th:if="${product.promotion != null && product.promotion.discount != null}"
+                              th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + '₫'"></span>
+                        
+                        <!-- Discounted Price -->
+                        <span class="discounted-price" 
+                              th:if="${product.promotion != null && product.promotion.discount != null}"
+                              th:text="${#numbers.formatDecimal(product.discountedPrice, 0, 'COMMA', 0, 'POINT')} + '₫'"></span>
+                        
+                        <!-- Normal Price (no promotion) -->
+                        <span class="discounted-price" 
+                              th:if="${product.promotion == null || product.promotion.discount == null}"
+                              th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + '₫'"></span>
+                    </div>
+                    
+                    <div class="product-footer">
+                        <div class="product-rating">
+                            ⭐ <span th:text="${product.rating}"></span>
+                        </div>
+                    </div>
+                </a>
+                
+                <form method="POST" action="/cart/add" style="display: inline;">
+                    <input type="hidden" name="productId" th:value="${product.productId}">
+                    <input type="hidden" name="quantity" value="1">
+                    <button type="submit" class="add-to-cart" 
+                            th:disabled="${product.quantity <= 0}"
+                            th:class="${product.quantity <= 0} ? 'add-to-cart disabled' : 'add-to-cart'">
+                        <span th:if="${product.quantity <= 0}">Hết hàng</span>
+                        <span th:if="${product.quantity > 0}">Thêm vào giỏ</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- No Products Message -->
+        <div class="no-products" th:if="${#lists.isEmpty(products)}">
+            <i class="fas fa-box-open" style="font-size: 3rem; margin-bottom: 1rem; color: #ddd;"></i>
+            <p>Hiện tại chưa có sản phẩm nào đang khuyến mãi</p>
+            <a href="/home" style="color: #667eea; text-decoration: none;">
+                ← Quay lại trang chủ
+            </a>
+        </div>
+        
+        <!-- Pagination -->
+        <div class="pagination" th:if="${totalPages > 1}">
+            <!-- Nút về trước -->
+            <a th:if="${currentPage > 0}"
+               th:href="@{/promotions(page=${currentPage - 1})}"
+               class="page-btn">« Trước</a>
+            <span th:if="${currentPage == 0}" class="page-btn disabled">« Trước</span>
+        
+            <!-- Các số trang -->
+            <a th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+               th:href="@{/promotions(page=${i})}"
+               th:text="${i + 1}"
+               th:classappend="${i == currentPage} ? 'active' : ''"
+               class="page-btn"></a>
+        
+            <!-- Nút tiếp theo -->
+            <a th:if="${currentPage < totalPages - 1}"
+               th:href="@{/promotions(page=${currentPage + 1})}"
+               class="page-btn">Tiếp »</a>
+            <span th:if="${currentPage == totalPages - 1}" class="page-btn disabled">Tiếp »</span>
+        </div>
+    </div>
+</main>
+
+<!-- Gọi footer -->
+<div th:replace="poly/fragments/footer :: footer"></div>
+
+</body>
+</html>

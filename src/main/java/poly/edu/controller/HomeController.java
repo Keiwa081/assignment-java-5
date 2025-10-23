@@ -1,6 +1,6 @@
-
 package poly.edu.controller;
 
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -10,9 +10,13 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import poly.edu.model.Account;
 import poly.edu.model.Category;
 import poly.edu.model.Product;
 import poly.edu.repository.ProductRepository;
+import poly.edu.repository.CartRepository;
+import poly.edu.repository.CategoryRepository;
 import poly.edu.service.CategoryService;
 import poly.edu.service.ProductService;
 
@@ -22,23 +26,89 @@ import java.util.Optional;
 
 @Controller
 public class HomeController {
-    
+	@Autowired
+	private ProductRepository productRepository;
+
+	@Autowired
+	private CategoryRepository categoryRepository;
+
+
+	/**
+	* Helper method để thêm attributes chung cho navbar
+	*/
+	private void addCommonAttributes(Model model, HttpSession session) {
+
+	// Thêm thông tin user và cart count
+	Account account = (Account) session.getAttribute("account");
+	if (account != null) {
+	model.addAttribute("account", account);
+
+	// Đếm số lượng items trong cart
+	int cartCount = cartRepository.findByAccountId(account.getAccountId()).size();
+	model.addAttribute("cartCount", cartCount);
+	} else {
+	model.addAttribute("cartCount", 0);
+	}
+	}
+
+	/**
+	* Trang chủ - hiển thị tất cả sản phẩm
+	*/
     @Autowired
     private ProductService productService;
     
     @Autowired
     private CategoryService categoryService;
     
-    @Autowired
-    private ProductRepository productRepository;
     
-    @GetMapping("/home")
-    public String home(Model model, @RequestParam(defaultValue = "0") int page) {
+    @Autowired
+    private CartRepository cartRepository;
+    
+    /**
+     * Helper method để thêm cart count cho navbar
+     */
+    private void addCartCount(Model model, HttpSession session) {
+        Account account = (Account) session.getAttribute("account");
+        if (account != null) {
+            int cartCount = cartRepository.findByAccountId(account.getAccountId()).size();
+            model.addAttribute("cartCount", cartCount);
+            model.addAttribute("account", account);
+        } else {
+            model.addAttribute("cartCount", 0);
+        }
+    }
+    
+    /**
+    * Trang Promotions - chỉ hiển thị sản phẩm có khuyến mãi
+    */
+    @GetMapping("/promotions")
+    public String promotions(@RequestParam(defaultValue = "0") int page, Model model) {
+    int pageSize = 12;
+    Pageable pageable = PageRequest.of(page, pageSize);
+
+    // Lấy sản phẩm có promotionId không null
+    Page<Product> productPage = productRepository.findProductsWithPromotion(pageable);
+
+    model.addAttribute("products", productPage.getContent());
+    model.addAttribute("currentPage", page);
+    model.addAttribute("totalPages", productPage.getTotalPages());
+    model.addAttribute("totalProducts", productPage.getTotalElements());
+    model.addAttribute("isPromotionPage", true);
+
+    return "poly/promotions";
+    }
+    
+    /**
+     * Trang chủ - hiển thị tất cả sản phẩm
+     */
+    @GetMapping({"/", "/home"})
+    public String home(Model model, 
+                       @RequestParam(defaultValue = "0") int page,
+                       HttpSession session) {
         try {
             Pageable pageable = PageRequest.of(page, 12);
             Page<Product> products = productRepository.findAll(pageable);
 
-            // ✅ Lấy category từ database
             List<Category> categories = categoryService.getCategoriesWithProducts();
 
             model.addAttribute("products", products.getContent());
@@ -46,6 +116,8 @@ public class HomeController {
             model.addAttribute("currentPage", page);
             model.addAttribute("totalPages", products.getTotalPages());
             model.addAttribute("totalProducts", products.getTotalElements());
+            
+            addCartCount(model, session);
 
             return "poly/index";
         } catch (Exception e) {
@@ -60,22 +132,22 @@ public class HomeController {
     }
 
     
-    @GetMapping("/under-construction")
-    public String underConstruction() {
-        return "poly/under-construction";
-    }
-    
+    /**
+     * Chi tiết sản phẩm
+     */
     @GetMapping("/product/{id}")
-    public String productDetail(@PathVariable Integer id, Model model) {
+    public String productDetail(@PathVariable Integer id, 
+                               Model model,
+                               HttpSession session) {
         Optional<Product> productOpt = productService.getProductById(id);
         if (productOpt.isPresent()) {
             Product product = productOpt.get();
             
             List<Category> categories = categoryService.getCategoriesWithProducts();
             model.addAttribute("categories", categories);
-
-            // ✅ Add product vào model
             model.addAttribute("product", product);
+            
+            addCartCount(model, session);
 
             return "poly/productdesc";
         } else {
@@ -83,33 +155,14 @@ public class HomeController {
         }
     }
 
-
-    @GetMapping("/about")
-    public String aboutPage() {
-        return "poly/about";
-    }
-    
-    @GetMapping("/test-db")
-    public String testDatabase(Model model) {
-        try {
-            // Test database connection by getting all products
-            List<Product> allProducts = productRepository.findAll();
-            model.addAttribute("message", "Database connection successful! Found " + allProducts.size() + " products.");
-            model.addAttribute("products", allProducts);
-            return "poly/test-db";
-        } catch (Exception e) {
-            model.addAttribute("message", "Database connection failed: " + e.getMessage());
-            model.addAttribute("products", new ArrayList<>());
-            return "poly/test-db";
-        }
-    }
-
-    
+    /**
+     * Xem sản phẩm theo category
+     */
     @GetMapping("/category/{name}")
-    public String viewCategory(
-            @PathVariable String name,
-            @RequestParam(defaultValue = "0") int page,
-            Model model) {
+    public String viewCategory(@PathVariable String name,
+                              @RequestParam(defaultValue = "0") int page,
+                              Model model,
+                              HttpSession session) {
 
         Category category = categoryService.getCategoryByName(name)
             .orElseThrow(() -> new RuntimeException("Category not found"));
@@ -117,31 +170,26 @@ public class HomeController {
         Pageable pageable = PageRequest.of(page, 12);
         Page<Product> products = productRepository.findByCategoryId(category.getCategoryId(), pageable);
 
-        
         List<Category> categories = categoryService.getCategoriesWithProducts();
         model.addAttribute("categories", categories);
-
         model.addAttribute("categoryName", category.getName());
         model.addAttribute("products", products.getContent());
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", products.getTotalPages());
+        
+        addCartCount(model, session);
 
         return "poly/category";
     }
 
-
-        @GetMapping("/terms")
-    public String terms() {
-        return "poly/terms";
-    }
-
-    @GetMapping("/privacy")
-    public String privacy() {
-        return "poly/privacy";
-    }
-    
+    /**
+     * Tìm kiếm sản phẩm
+     */
     @GetMapping("/search")
-    public String search(@RequestParam("q") String keyword, Model model, @RequestParam(defaultValue = "0") int page) {
+    public String search(@RequestParam("q") String keyword, 
+                        Model model, 
+                        @RequestParam(defaultValue = "0") int page,
+                        HttpSession session) {
         if (keyword == null || keyword.trim().isEmpty()) {
             Page<Product> featuredProducts = productService.getFeaturedProducts(page, 12);
             model.addAttribute("products", featuredProducts.getContent());
@@ -159,10 +207,67 @@ public class HomeController {
         List<Category> categories = categoryService.getCategoriesWithProducts();
         model.addAttribute("categories", categories);
         model.addAttribute("keyword", keyword);
+        
+        addCartCount(model, session);
 
         return "poly/search";
     }
 
+    /**
+     * Trang About
+     */
+    @GetMapping("/about")
+    public String aboutPage(HttpSession session, Model model) {
+        List<Category> categories = categoryService.getCategoriesWithProducts();
+        model.addAttribute("categories", categories);
+        addCartCount(model, session);
+        return "poly/about";
+    }
+    
+    /**
+     * Trang Terms
+     */
+    @GetMapping("/terms")
+    public String terms(HttpSession session, Model model) {
+        List<Category> categories = categoryService.getCategoriesWithProducts();
+        model.addAttribute("categories", categories);
+        addCartCount(model, session);
+        return "poly/terms";
+    }
 
-
+    /**
+     * Trang Privacy
+     */
+    @GetMapping("/privacy")
+    public String privacy(HttpSession session, Model model) {
+        List<Category> categories = categoryService.getCategoriesWithProducts();
+        model.addAttribute("categories", categories);
+        addCartCount(model, session);
+        return "poly/privacy";
+    }
+    
+    /**
+     * Trang Under Construction
+     */
+    @GetMapping("/under-construction")
+    public String underConstruction() {
+        return "poly/under-construction";
+    }
+    
+    /**
+     * Test database connection
+     */
+    @GetMapping("/test-db")
+    public String testDatabase(Model model) {
+        try {
+            List<Product> allProducts = productRepository.findAll();
+            model.addAttribute("message", "Database connection successful! Found " + allProducts.size() + " products.");
+            model.addAttribute("products", allProducts);
+            return "poly/test-db";
+        } catch (Exception e) {
+            model.addAttribute("message", "Database connection failed: " + e.getMessage());
+            model.addAttribute("products", new ArrayList<>());
+            return "poly/test-db";
+        }
+    }
 }

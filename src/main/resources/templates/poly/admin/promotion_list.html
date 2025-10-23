@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Khuyến mãi - Poly Shop</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: -30px auto 50px;
+            padding: 0 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 2rem;
+        }
+        
+        .badge-active {
+            background: #28a745;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        
+        .badge-inactive {
+            background: #dc3545;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        
+        .btn-add {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 10px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1><i class="fas fa-tags"></i> Quản lý Khuyến mãi</h1>
+                </div>
+                <div>
+                    <a href="/admin/dashboard" class="btn btn-light me-2">
+                        <i class="fas fa-arrow-left"></i> Quay lại
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="container mt-4">
+        <!-- Messages -->
+        <div th:if="${message}" 
+             th:class="${messageType == 'success'} ? 'alert alert-success' : 'alert alert-danger'" 
+             th:text="${message}"></div>
+        
+        <div class="card">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3><i class="fas fa-list"></i> Danh sách Khuyến mãi</h3>
+                <a href="/admin/promotion/add" class="btn-add">
+                    <i class="fas fa-plus-circle"></i> Thêm mới
+                </a>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Tên chương trình</th>
+                            <th>Mô tả</th>
+                            <th>Giảm giá</th>
+                            <th>Ngày bắt đầu</th>
+                            <th>Ngày kết thúc</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="promo : ${promotions}">
+                            <td th:text="${promo.id}"></td>
+                            <td th:text="${promo.name}"></td>
+                            <td th:text="${promo.description}"></td>
+                            <td>
+                                <strong th:text="${#numbers.formatPercent(promo.discount, 0, 0)}"></strong>
+                            </td>
+                            <td th:text="${#dates.format(promo.startDate, 'dd/MM/yyyy')}"></td>
+                            <td th:text="${#dates.format(promo.endDate, 'dd/MM/yyyy')}"></td>
+                            <td>
+                                <span th:if="${promo.status}" class="badge-active">
+                                    <i class="fas fa-check-circle"></i> Active
+                                </span>
+                                <span th:unless="${promo.status}" class="badge-inactive">
+                                    <i class="fas fa-times-circle"></i> Inactive
+                                </span>
+                            </td>
+                            <td>
+                                <a th:href="@{/admin/promotion/edit/{id}(id=${promo.id})}" 
+                                   class="btn btn-sm btn-warning">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                
+                                <form th:action="@{/admin/promotion/delete/{id}(id=${promo.id})}" 
+                                      method="POST" style="display: inline;">
+                                    <button type="submit" class="btn btn-sm btn-danger"
+                                            onclick="return confirm('Bạn có chắc muốn xóa?')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        
+                        <tr th:if="${#lists.isEmpty(promotions)}">
+                            <td colspan="8" class="text-center text-muted">
+                                Chưa có chương trình khuyến mãi nào
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

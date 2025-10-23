@@ -86,13 +86,28 @@
             text-decoration: underline;
         }
 
-        /* Ảnh xem trước */
         .preview {
             display: block;
             margin: 10px auto;
             max-width: 150px;
             border-radius: 8px;
             border: 1px solid #ddd;
+        }
+
+        .alert {
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            border-radius: 8px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
         }
     </style>
 </head>
@@ -103,43 +118,59 @@
 <div class="tab-container">
     <h2>Thêm sản phẩm mới</h2>
 
-    <form th:action="@{/admin/product/save}" th:object="${product}" method="post" enctype="multipart/form-data">
+    <!-- Hiển thị thông báo -->
+    <div th:if="${message}"
+         th:class="${messageType == 'success'} ? 'alert alert-success' : 'alert alert-danger'"
+         th:text="${message}"></div>
 
+    <form th:action="@{/admin/product/save}" method="POST" th:object="${product}" enctype="multipart/form-data">
         <div class="form-group">
-            <label for="name">Tên sản phẩm:</label>
-            <input type="text" id="name" th:field="*{name}" placeholder="Nhập tên sản phẩm" required>
+            <label>Tên sản phẩm *</label>
+            <input type="text" th:field="*{name}" placeholder="Nhập tên sản phẩm" required>
         </div>
 
         <div class="form-group">
-            <label for="categoryId">Danh mục:</label>
-            <select id="categoryId" th:field="*{categoryId}" required>
+            <label>Mô tả</label>
+            <textarea th:field="*{description}" rows="3" placeholder="Nhập mô tả sản phẩm"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Giá (VNĐ) *</label>
+            <input type="number" th:field="*{price}" step="1000" min="0" placeholder="Nhập giá" required>
+        </div>
+
+        <div class="form-group">
+            <label>Số lượng *</label>
+            <input type="number" th:field="*{quantity}" min="0" placeholder="Nhập số lượng" required>
+        </div>
+
+        <div class="form-group">
+            <label>URL hình ảnh</label>
+            <input type="text" id="imageUrl" th:field="*{imageUrl}" placeholder="https://...">
+            <img id="preview" class="preview" src="#" alt="Xem trước ảnh" style="display:none;">
+        </div>
+
+        <div class="form-group">
+            <label>Danh mục *</label>
+            <select th:field="*{categoryId}" required>
                 <option value="">-- Chọn danh mục --</option>
-                <option th:each="cat : ${categories}"
-                        th:value="${cat.categoryId}"
-                        th:text="${cat.name}">
-                </option>
+                <option th:each="cat : ${categories}" th:value="${cat.categoryId}" th:text="${cat.name}"></option>
             </select>
         </div>
 
         <div class="form-group">
-            <label for="description">Mô tả:</label>
-            <textarea id="description" th:field="*{description}" rows="3" placeholder="Nhập mô tả sản phẩm"></textarea>
+            <label>Khuyến mãi</label>
+            <select th:field="*{promotionId}">
+                <option value="">-- Không có --</option>
+                <option th:each="promo : ${promotions}"
+                        th:value="${promo.id}"
+                        th:text="${promo.name + ' (' + #numbers.formatPercent(promo.discount, 0, 0) + ')'}"></option>
+            </select>
         </div>
 
         <div class="form-group">
-            <label for="price">Giá (VNĐ):</label>
-            <input type="number" id="price" th:field="*{price}" min="0" step="0.01" placeholder="Nhập giá" required>
-        </div>
-
-        <div class="form-group">
-            <label for="quantity">Số lượng:</label>
-            <input type="number" id="quantity" th:field="*{quantity}" min="0" placeholder="Nhập số lượng" required>
-        </div>
-
-        <div class="form-group">
-            <label for="imageUrl">Hình ảnh (URL):</label>
-            <input type="text" id="imageUrl" th:field="*{imageUrl}" placeholder="https://...">
-            <img id="preview" class="preview" src="#" alt="Xem trước ảnh" style="display:none;">
+            <label>Đánh giá</label>
+            <input type="number" th:field="*{rating}" step="0.1" min="0" max="5" placeholder="0 - 5">
         </div>
 
         <button type="submit" class="btn-submit">💾 Lưu sản phẩm</button>

@@ -1,91 +1,85 @@
 <!-- file: src/main/resources/templates/poly/fragments/header.html -->
 <div th:fragment="header">
-<header>
-<div class="header-container">
-<div class="header-top">
-<a href="/home" class="logo">
-<img src="/photos/logo.png" alt="ShopVN" style="height:100px; vertical-align:middle;"> ShopAPKD
-</a>
+    <header>
+        <div class="header-container">
+            <div class="header-top">
+                <a href="/home" class="logo">
+                    <img src="/photos/logo.png" alt="ShopVN" style="height:100px; vertical-align:middle;"> ShopAPKD
+                </a>
 
-<div class="search-bar">
-<form th:action="@{/search}" method="get" style="display:flex; align-items:center;">
-<input type="text" name="q" placeholder="Tìm kiếm sản phẩm, thương hiệu..." required>
-<button type="submit" style="padding:8px 12px; margin-left:5px;">Tìm</button>
-</form>
-</div>
+                <div class="search-bar">
+                    <form th:action="@{/search}" method="get" style="display:flex; align-items:center;">
+                        <input type="text" name="q" placeholder="Tìm kiếm sản phẩm, thương hiệu..." required>
+                        <button type="submit" style="padding:8px 12px; margin-left:5px;">Tìm</button>
+                    </form>
+                </div>
 
-<div class="header-actions">
-<!-- ✅ THÊM: Icon Đơn hàng của tôi -->
-<a href="/orders" class="header-btn">
-<i class="fas fa-box"></i> Đơn hàng
-</a>
-<!-- Icon Giỏ hàng -->
-<a href="/cart" class="header-btn">
-<i class="fas fa-shopping-cart"></i> Giỏ hàng
-</a>
-<!-- Icon Tài khoản -->
-<a href="/account" class="header-btn">
-<i class="fas fa-user"></i> Tài khoản
-</a>
-</div>
-</div>
-</div>
+                <div class="header-actions">
+                    <a href="/orders" class="header-btn">
+                        <i class="fas fa-box"></i> Đơn hàng
+                    </a>
+                    <a href="/cart" class="header-btn">
+                        <i class="fas fa-shopping-cart"></i> Giỏ hàng
+                    </a>
+                    <a href="/account" class="header-btn">
+                        <i class="fas fa-user"></i> Tài khoản
+                    </a>
+                </div>
+            </div>
+        </div>
 
-<nav>
-<div class="nav-container">
-<a th:each="category : ${categories}"
-th:href="@{/category/{name}(name=${category.name})}"
-th:text="${category.name}"></a>
-</div>
-</nav>
+        <!-- ✅ Đưa nav vào trong <header> luôn -->
+        <nav>
+            <div class="nav-container">
+                <a th:each="category : ${categories}"
+                   th:href="@{/category/{name}(name=${category.name})}"
+                   th:text="${category.name}"></a>
+            </div>
+        </nav>
+    </header>
 
-<!-- ✅ THÊM: CSS cho icon FontAwesome nếu chưa có -->
-<style>
-.header-actions {
-display: flex;
-gap: 15px;
-align-items: center;
-}
+    <!-- ✅ Giữ CSS & link ở cuối -->
+    <style>
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        .header-btn {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 15px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            text-decoration: none;
+            color: #333;
+            font-size: 14px;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        .header-btn:hover {
+            background: #6f42c1;
+            color: white;
+            border-color: #6f42c1;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(111, 66, 193, 0.2);
+        }
+        .header-btn i {
+            font-size: 16px;
+        }
+        @media (max-width: 768px) {
+            .header-btn {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+            .header-btn span {
+                display: none;
+            }
+        }
+    </style>
 
-.header-btn {
-display: flex;
-align-items: center;
-gap: 5px;
-padding: 8px 15px;
-background: #fff;
-border: 1px solid #ddd;
-border-radius: 6px;
-text-decoration: none;
-color: #333;
-font-size: 14px;
-transition: all 0.3s;
-white-space: nowrap;
-}
-
-.header-btn:hover {
-background: #6f42c1;
-color: white;
-border-color: #6f42c1;
-transform: translateY(-2px);
-box-shadow: 0 4px 8px rgba(111, 66, 193, 0.2);
-}
-
-.header-btn i {
-font-size: 16px;
-}
-
-/* Responsive cho mobile */
-@media (max-width: 768px) {
-.header-btn {
-padding: 6px 10px;
-font-size: 12px;
-}
-.header-btn span {
-display: none; /* Ẩn text trên mobile, chỉ hiện icon */
-}
-}
-</style>
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</header>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </div>
