@@ -9,36 +9,41 @@
 </head>
 <body>
 
-<div th:replace="poly/fragments/header :: header"></div>
+	<div th:replace="poly/fragments/header :: header"></div>
 
-<!-- Account Container -->
-<main>
-<div class="account-container">
-<div class="account-header">
-<h1>Xin chào, <span th:text="${account.fullName}">Nguyễn Văn A</span> 👤</h1>
-<p>Email: <span th:text="${account.email}">abc@gmail.com</span></p>
-<p>Tài khoản: <span th:text="${account.username}">nguyenvana</span></p>
-<p>Trạng thái:
-<span th:text="${account.active ? 'Đã kích hoạt' : 'Chưa kích hoạt'}">Đã kích hoạt</span>
-</p>
-</div>
+	<!-- Account Container -->
+	<main>
+		<div class="account-container">
+			<div class="account-header">
+				<h1>
+					Xin chào, <span th:text="${account.fullName}">Nguyễn Văn A</span>
+					👤
+				</h1>
+				<p>
+					Email: <span th:text="${account.email}">abc@gmail.com</span>
+				</p>
+				<p>
+					Tài khoản: <span th:text="${account.username}">nguyenvana</span>
+				</p>
+				<p>
+					Trạng thái: <span
+						th:text="${account.active ? 'Đã kích hoạt' : 'Chưa kích hoạt'}">Đã
+						kích hoạt</span>
+				</p>
+			</div>
 
-<div class="account-links">
-<a href="/account/update">Cập nhật thông tin</a>
-<a href="/account/doiMatKhau">Đổi mật khẩu</a>
-<a href="/account/forgot">Quên mật khẩu</a>
-<a href="/admin/dashboard"
-class="admin-btn"
-th:if="${isAdmin}">
-🛡️ Admin Dashboard
-</a>
-<a href="/account/logout" class="logout-btn">Đăng xuất</a>
-</div>
+			<div class="account-links">
+				<a href="/account/update">Cập nhật thông tin</a> <a
+					href="/account/doiMatKhau">Đổi mật khẩu</a> <a
+					href="/account/forgot">Quên mật khẩu</a> <a href="/admin/dashboard"
+					class="admin-btn" th:if="${isAdmin}"> Bảng điều khiển quản trị
+				</a> <a href="/account/logout" class="logout-btn">Đăng xuất</a>
+			</div>
 
-</div>
-</main>
+		</div>
+	</main>
 
-<div th:replace="poly/fragments/footer :: footer"></div>
+	<div th:replace="poly/fragments/footer :: footer"></div>
 
 </body>
 </html>
