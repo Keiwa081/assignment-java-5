@@ -1,297 +1,295 @@
 package poly.edu.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.*;
 import poly.edu.dao.AccountDAO;
+import poly.edu.dao.RoleDAO;
 import poly.edu.model.Account;
+import poly.edu.model.Role;
+import poly.edu.service.AuthService;
 import poly.edu.service.MailService;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 @Controller
 @RequestMapping("/account")
 public class AccountController {
 
-	@Autowired
-	private AccountDAO accountDAO;
+    @Autowired
+    private AccountDAO accountDAO;
 
-	@Autowired
-	private MailService mailService;
+    @Autowired
+    private RoleDAO roleDAO;
 
-	// ================== TRANG TÀI KHOẢN CHÍNH ==================
-	@GetMapping
-	public String accountPage(HttpSession session, Model model) {
-		// ✅ FIX: Đổi từ "user" sang "account"
-		Account loggedIn = (Account) session.getAttribute("account");
-		if (loggedIn == null) {
-			return "redirect:/account/login";
-		}
+    @Autowired
+    private MailService mailService;
 
-		boolean isAdmin = loggedIn.getRoles().stream()
-				.anyMatch(r -> r.getRoleName().equalsIgnoreCase("ADMIN"));
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
-		model.addAttribute("account", loggedIn);
-		model.addAttribute("isAdmin", isAdmin);
-		return "poly/taikhoan/account";
-	}
+    @Autowired
+    private AuthService authService;
 
-	// ================== Trang đăng nhập & đăng ký (tab chung) ==================
-	@GetMapping("/login")
-	public String loginPage(HttpServletRequest request, Model model) {
-		String rememberedUser = null;
-		for (Cookie c : Optional.ofNullable(request.getCookies()).orElse(new Cookie[0])) {
-			if (c.getName().equals("remember-username")) {
-				rememberedUser = c.getValue();
-				break;
-			}
-		}
-		model.addAttribute("rememberedUser", rememberedUser);
-		model.addAttribute("account", new Account());
-		return "poly/taikhoan/login-register";
-	}
+    // ================== TRANG TÀI KHOẢN CHÍNH ==================
+    @GetMapping
+    public String accountPage(Model model) {
+        if (!authService.isAuthenticated()) {
+            return "redirect:/account/login";
+        }
 
-	// ================== Đăng nhập ==================
-	@PostMapping("/login")
-	public String login(@RequestParam String username, @RequestParam String password,
-			@RequestParam(required = false) String remember, HttpServletResponse response, HttpSession session,
-			Model model) {
+        Account loggedIn = authService.getAccount();
+        boolean isAdmin = authService.hasRole("ADMIN");
 
-		Optional<Account> opt = accountDAO.findByUsername(username);
-		if (opt.isEmpty()) {
-			model.addAttribute("error", "❌ Tài khoản không tồn tại!");
-			return "poly/taikhoan/login-register";
-		}
+        model.addAttribute("account", loggedIn);
+        model.addAttribute("isAdmin", isAdmin);
+        return "poly/taikhoan/account";
+    }
 
-		Account acc = opt.get();
-		if (!acc.getPassword().equals(password)) {
-			model.addAttribute("error", "❌ Mật khẩu không đúng!");
-			return "poly/taikhoan/login-register";
-		}
+    // ================== Trang đăng nhập & đăng ký (tab chung) ==================
+    @GetMapping("/login")
+    public String loginPage(HttpServletRequest request, Model model) {
+        // Nếu đã đăng nhập, redirect về /account
+        if (authService.isAuthenticated()) {
+            return "redirect:/account";
+        }
 
-		if (!acc.getActive()) {
-			model.addAttribute("error", "❌ Tài khoản đã bị khóa!");
-			return "poly/taikhoan/login-register";
-		}
+        String rememberedUser = null;
+        for (Cookie c : Optional.ofNullable(request.getCookies()).orElse(new Cookie[0])) {
+            if (c.getName().equals("remember-username")) {
+                rememberedUser = c.getValue();
+                break;
+            }
+        }
+        model.addAttribute("rememberedUser", rememberedUser);
+        model.addAttribute("account", new Account());
+        
+        // Kiểm tra có error từ Spring Security không
+        String error = request.getParameter("error");
+        if (error != null) {
+            model.addAttribute("error", "❌ Tên đăng nhập hoặc mật khẩu không đúng!");
+        }
+        
+        return "poly/taikhoan/login-register";
+    }
 
-		// ✅ FIX: Đổi từ "user" sang "account"
-		session.setAttribute("account", acc);
+    // ================== Đăng ký ==================
+    @PostMapping("/register")
+    public String register(@ModelAttribute("account") Account account, Model model) {
+        if (accountDAO.findByUsername(account.getUsername()).isPresent()) {
+            model.addAttribute("error", "❌ Tên đăng nhập đã tồn tại!");
+            return "poly/taikhoan/login-register";
+        }
+        if (accountDAO.findByEmail(account.getEmail()).isPresent()) {
+            model.addAttribute("error", "❌ Email đã được sử dụng!");
+            return "poly/taikhoan/login-register";
+        }
 
-		if (remember != null) {
-			Cookie cookie = new Cookie("remember-username", username);
-			cookie.setMaxAge(10 * 24 * 60 * 60);
-			cookie.setPath("/");
-			response.addCookie(cookie);
-		} else {
-			Cookie cookie = new Cookie("remember-username", null);
-			cookie.setMaxAge(0);
-			cookie.setPath("/");
-			response.addCookie(cookie);
-		}
+        // Mã hóa password
+        account.setPassword(passwordEncoder.encode(account.getPassword()));
+        account.setActive(true);
+        account.setCreatedAt(LocalDateTime.now());
 
-		return "redirect:/account";
-	}
+        // Gán role USER mặc định
+        Optional<Role> userRole = roleDAO.findByRoleName("USER");
+        if (userRole.isPresent()) {
+            Set<Role> roles = new HashSet<>();
+            roles.add(userRole.get());
+            account.setRoles(roles);
+        }
 
-	// ================== Đăng ký ==================
-	@PostMapping("/register")
-	public String register(@ModelAttribute("account") Account account, Model model) {
-		if (accountDAO.findByUsername(account.getUsername()).isPresent()) {
-			model.addAttribute("error", "❌ Tên đăng nhập đã tồn tại!");
-			return "poly/taikhoan/login-register";
-		}
-		if (accountDAO.findByEmail(account.getEmail()).isPresent()) {
-			model.addAttribute("error", "❌ Email đã được sử dụng!");
-			return "poly/taikhoan/login-register";
-		}
+        accountDAO.save(account);
 
-		account.setActive(true);
-		account.setCreatedAt(LocalDateTime.now());
-		accountDAO.save(account);
+        model.addAttribute("message", "✅ Đăng ký thành công! Hãy đăng nhập.");
+        return "poly/taikhoan/login-register";
+    }
 
-		model.addAttribute("message", "✅ Đăng ký thành công! Hãy đăng nhập.");
-		return "poly/taikhoan/login-register";
-	}
+    // ================== Đăng xuất ==================
+    // Spring Security sẽ tự xử lý /logout, không cần method này
+    
+    // ================== Cập nhật thông tin ==================
+    @GetMapping("/update")
+    public String updatePage(Model model) {
+        if (!authService.isAuthenticated()) {
+            return "redirect:/account/login";
+        }
+        
+        Account user = authService.getAccount();
+        model.addAttribute("account", user);
+        return "poly/taikhoan/update-account";
+    }
 
-	// ================== Đăng xuất ==================
-	@GetMapping("/logout")
-	public String logout(HttpSession session) {
-		session.invalidate();
-		return "redirect:/account/login";
-	}
+    @PostMapping("/update")
+    public String updateAccount(@ModelAttribute("account") Account formAccount, Model model) {
+        if (!authService.isAuthenticated()) {
+            return "redirect:/account/login";
+        }
 
-	// ================== Cập nhật thông tin ==================
-	@GetMapping("/update")
-	public String updatePage(HttpSession session, Model model) {
-		// ✅ FIX: Đổi từ "user" sang "account"
-		Account user = (Account) session.getAttribute("account");
-		if (user == null) {
-			return "redirect:/account/login";
-		}
-		model.addAttribute("account", user);
-		return "poly/taikhoan/update-account";
-	}
+        Account currentUser = authService.getAccount();
 
-	@PostMapping("/update")
-	public String updateAccount(@ModelAttribute("account") Account formAccount, HttpSession session, Model model) {
-		// ✅ FIX: Đổi từ "user" sang "account"
-		Account currentUser = (Account) session.getAttribute("account");
-		if (currentUser == null) {
-			return "redirect:/account/login";
-		}
+        try {
+            Optional<Account> existingEmail = accountDAO.findByEmail(formAccount.getEmail());
+            if (existingEmail.isPresent() && 
+                existingEmail.get().getAccountId() != currentUser.getAccountId()) {
+                model.addAttribute("error", "❌ Email này đã được sử dụng bởi tài khoản khác!");
+                model.addAttribute("account", currentUser);
+                return "poly/taikhoan/update-account";
+            }
 
-		try {
-			Optional<Account> existingEmail = accountDAO.findByEmail(formAccount.getEmail());
-			if (existingEmail.isPresent() && !existingEmail.get().getUsername().equals(currentUser.getUsername())) {
-				model.addAttribute("error", "❌ Email này đã được sử dụng bởi tài khoản khác!");
-				model.addAttribute("account", currentUser);
-				return "poly/taikhoan/update-account";
-			}
+            currentUser.setEmail(formAccount.getEmail());
+            currentUser.setFullName(formAccount.getFullName());
+            currentUser.setPhone(formAccount.getPhone());
+            currentUser.setAddress(formAccount.getAddress());
 
-			currentUser.setEmail(formAccount.getEmail());
-			currentUser.setFullName(formAccount.getFullName());
-			currentUser.setActive(currentUser.getActive());
-			currentUser.setPassword(currentUser.getPassword());
-			currentUser.setCreatedAt(currentUser.getCreatedAt());
+            accountDAO.save(currentUser);
+            model.addAttribute("account", currentUser);
+            model.addAttribute("message", "✅ Cập nhật thông tin thành công!");
 
-			accountDAO.save(currentUser);
-			// ✅ FIX: Đổi từ "user" sang "account"
-			session.setAttribute("account", currentUser);
-			model.addAttribute("account", currentUser);
-			model.addAttribute("message", "✅ Cập nhật thông tin thành công!");
+        } catch (Exception e) {
+            model.addAttribute("error", "❌ Lỗi khi cập nhật: " + e.getMessage());
+            model.addAttribute("account", formAccount);
+        }
 
-		} catch (Exception e) {
-			model.addAttribute("error", "❌ Lỗi khi cập nhật: " + e.getMessage());
-			model.addAttribute("account", formAccount);
-		}
+        return "poly/taikhoan/update-account";
+    }
 
-		return "poly/taikhoan/update-account";
-	}
+    // ================== Đổi mật khẩu ==================
+    @GetMapping("/doiMatKhau")
+    public String doiMatKhauForm(Model model) {
+        if (!authService.isAuthenticated()) {
+            return "redirect:/account/login";
+        }
+        
+        Account user = authService.getAccount();
+        model.addAttribute("account", user);
+        return "poly/taikhoan/doiMatKhau";
+    }
 
-	// ================== Đổi mật khẩu ==================
-	@GetMapping("/doiMatKhau")
-	public String doiMatKhauForm(HttpSession session, Model model) {
-		// ✅ Thêm check login
-		Account user = (Account) session.getAttribute("account");
-		if (user == null) {
-			return "redirect:/account/login";
-		}
-		model.addAttribute("account", user);
-		return "poly/taikhoan/doiMatKhau";
-	}
+    @PostMapping("/doiMatKhau")
+    public String doiMatKhau(@RequestParam String oldPassword, 
+                              @RequestParam String newPassword,
+                              @RequestParam String confirmPassword, 
+                              Model model) {
 
-	@PostMapping("/doiMatKhau")
-	public String doiMatKhau(@RequestParam String oldPassword, @RequestParam String newPassword,
-			@RequestParam String confirmPassword, HttpSession session, Model model) {
+        if (!authService.isAuthenticated()) {
+            return "redirect:/account/login";
+        }
 
-		// ✅ FIX: Thêm logic đổi mật khẩu thực sự
-		Account currentUser = (Account) session.getAttribute("account");
-		if (currentUser == null) {
-			return "redirect:/account/login";
-		}
+        Account currentUser = authService.getAccount();
 
-		if (!currentUser.getPassword().equals(oldPassword)) {
-			model.addAttribute("error", "❌ Mật khẩu cũ không đúng!");
-			model.addAttribute("account", currentUser);
-			return "poly/taikhoan/doiMatKhau";
-		}
+        // Kiểm tra mật khẩu cũ
+        if (!passwordEncoder.matches(oldPassword, currentUser.getPassword())) {
+            model.addAttribute("error", "❌ Mật khẩu cũ không đúng!");
+            model.addAttribute("account", currentUser);
+            return "poly/taikhoan/doiMatKhau";
+        }
 
-		if (!newPassword.equals(confirmPassword)) {
-			model.addAttribute("error", "❌ Mật khẩu xác nhận không khớp!");
-			model.addAttribute("account", currentUser);
-			return "poly/taikhoan/doiMatKhau";
-		}
+        if (!newPassword.equals(confirmPassword)) {
+            model.addAttribute("error", "❌ Mật khẩu xác nhận không khớp!");
+            model.addAttribute("account", currentUser);
+            return "poly/taikhoan/doiMatKhau";
+        }
 
-		if (newPassword.length() < 6) {
-			model.addAttribute("error", "❌ Mật khẩu mới phải có ít nhất 6 ký tự!");
-			model.addAttribute("account", currentUser);
-			return "poly/taikhoan/doiMatKhau";
-		}
+        if (newPassword.length() < 6) {
+            model.addAttribute("error", "❌ Mật khẩu mới phải có ít nhất 6 ký tự!");
+            model.addAttribute("account", currentUser);
+            return "poly/taikhoan/doiMatKhau";
+        }
 
-		// ✅ Cập nhật mật khẩu
-		currentUser.setPassword(newPassword);
-		accountDAO.save(currentUser);
-		session.setAttribute("account", currentUser);
+        // Mã hóa và cập nhật mật khẩu
+        currentUser.setPassword(passwordEncoder.encode(newPassword));
+        accountDAO.save(currentUser);
 
-		model.addAttribute("message", "✅ Đổi mật khẩu thành công!");
-		model.addAttribute("account", currentUser);
-		return "poly/taikhoan/doiMatKhau";
-	}
+        model.addAttribute("message", "✅ Đổi mật khẩu thành công!");
+        model.addAttribute("account", currentUser);
+        return "poly/taikhoan/doiMatKhau";
+    }
 
-	// ================== Quên mật khẩu ==================
-	@GetMapping("/forgot")
-	public String showForgotPage() {
-		return "poly/taikhoan/forgot";
-	}
+    // ================== Quên mật khẩu ==================
+    @GetMapping("/forgot")
+    public String showForgotPage() {
+        return "poly/taikhoan/forgot";
+    }
 
-	@PostMapping("/forgot")
-	public String processForgot(@RequestParam("email") String input, HttpSession session, Model model) {
-		Optional<Account> opt = accountDAO.findByEmail(input);
-		if (opt.isEmpty()) {
-			opt = accountDAO.findByUsername(input);
-		}
+    @PostMapping("/forgot")
+    public String processForgot(@RequestParam("email") String input, Model model) {
+        Optional<Account> opt = accountDAO.findByEmail(input);
+        if (opt.isEmpty()) {
+            opt = accountDAO.findByUsername(input);
+        }
 
-		if (opt.isEmpty()) {
-			model.addAttribute("error", "❌ Không tìm thấy tài khoản với thông tin này!");
-			return "poly/taikhoan/forgot";
-		}
+        if (opt.isEmpty()) {
+            model.addAttribute("error", "❌ Không tìm thấy tài khoản với thông tin này!");
+            return "poly/taikhoan/forgot";
+        }
 
-		Account acc = opt.get();
+        Account acc = opt.get();
 
-		// Tạo mã reset ngẫu nhiên
-		String resetCode = java.util.UUID.randomUUID().toString().substring(0, 8);
-		acc.setResetCode(resetCode);
-		accountDAO.save(acc);
+        // Tạo mã reset ngẫu nhiên
+        String resetCode = java.util.UUID.randomUUID().toString().substring(0, 8);
+        acc.setResetCode(resetCode);
+        accountDAO.save(acc);
 
-		// Gửi mail
-		mailService.sendMail(acc.getEmail(), "Đặt lại mật khẩu - Ứng dụng của bạn",
-				"Xin chào " + acc.getFullName() + ",\n\n" + "Mã đặt lại mật khẩu của bạn là: " + resetCode + "\n\n"
-						+ "Truy cập trang sau để nhập mã và đặt lại mật khẩu mới:\n"
-						+ "http://localhost:8080/account/reset?email=" + acc.getEmail() + "\n\n"
-						+ "Trân trọng,\nĐội ngũ hỗ trợ.");
+        // Gửi mail
+        mailService.sendMail(acc.getEmail(), "Đặt lại mật khẩu - Ứng dụng của bạn",
+                "Xin chào " + acc.getFullName() + ",\n\n" + 
+                "Mã đặt lại mật khẩu của bạn là: " + resetCode + "\n\n" +
+                "Truy cập trang sau để nhập mã và đặt lại mật khẩu mới:\n" +
+                "http://localhost:8080/account/reset?email=" + acc.getEmail() + "\n\n" +
+                "Trân trọng,\nĐội ngũ hỗ trợ.");
 
-		return "redirect:/account/reset?email=" + acc.getEmail();
-	}
+        return "redirect:/account/reset?email=" + acc.getEmail();
+    }
 
-	// ================== Xử lý reset mật khẩu ==================
-	@GetMapping("/reset")
-	public String showResetForm() {
-		return "poly/taikhoan/reset";
-	}
+    // ================== Xử lý reset mật khẩu ==================
+    @GetMapping("/reset")
+    public String showResetForm(@RequestParam(required = false) String email, Model model) {
+        if (email != null) {
+            model.addAttribute("email", email);
+        }
+        return "poly/taikhoan/reset";
+    }
 
-	@PostMapping("/reset")
-	public String processReset(@RequestParam String email, @RequestParam String code, @RequestParam String newPassword,
-			@RequestParam String confirmPassword, Model model, HttpSession session) {
+    @PostMapping("/reset")
+    public String processReset(@RequestParam String email, 
+                               @RequestParam String code, 
+                               @RequestParam String newPassword,
+                               @RequestParam String confirmPassword, 
+                               Model model) {
 
-		Optional<Account> opt = accountDAO.findByEmail(email);
+        Optional<Account> opt = accountDAO.findByEmail(email);
 
-		if (opt.isEmpty()) {
-			model.addAttribute("error", "❌ Email không tồn tại!");
-			return "poly/taikhoan/reset";
-		}
+        if (opt.isEmpty()) {
+            model.addAttribute("error", "❌ Email không tồn tại!");
+            return "poly/taikhoan/reset";
+        }
 
-		Account acc = opt.get();
-		if (acc.getResetCode() == null || !acc.getResetCode().equals(code)) {
-			model.addAttribute("error", "❌ Mã xác nhận không đúng!");
-			return "poly/taikhoan/reset";
-		}
+        Account acc = opt.get();
+        if (acc.getResetCode() == null || !acc.getResetCode().equals(code)) {
+            model.addAttribute("error", "❌ Mã xác nhận không đúng!");
+            model.addAttribute("email", email);
+            return "poly/taikhoan/reset";
+        }
 
-		if (!newPassword.equals(confirmPassword)) {
-			model.addAttribute("error", "❌ Mật khẩu xác nhận không khớp!");
-			return "poly/taikhoan/reset";
-		}
+        if (!newPassword.equals(confirmPassword)) {
+            model.addAttribute("error", "❌ Mật khẩu xác nhận không khớp!");
+            model.addAttribute("email", email);
+            return "poly/taikhoan/reset";
+        }
 
-		// Cập nhật mật khẩu và đăng nhập tự động
-		acc.setPassword(newPassword);
-		acc.setResetCode(null);
-		accountDAO.save(acc);
+        // Mã hóa mật khẩu mới và reset code
+        acc.setPassword(passwordEncoder.encode(newPassword));
+        acc.setResetCode(null);
+        accountDAO.save(acc);
 
-		// ✅ FIX: Đổi từ "user" sang "account"
-		session.setAttribute("account", acc);
-
-		return "redirect:/account";
-	}
+        model.addAttribute("message", "✅ Đặt lại mật khẩu thành công! Vui lòng đăng nhập.");
+        return "poly/taikhoan/login-register";
+    }
 }

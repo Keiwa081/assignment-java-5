@@ -1,6 +1,5 @@
 package poly.edu.controller;
 
-import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -9,8 +8,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import poly.edu.dao.AccountDAO;
-import poly.edu.model.Account;
 import poly.edu.repository.ProductRepository;
+import poly.edu.service.AuthService;
 import poly.edu.service.OrderService;
 
 @Controller
@@ -26,61 +25,38 @@ public class AdminDashboardController {
     @Autowired
     private AccountDAO accountDAO;
     
-    /**
-     * Check if current user is admin
-     */
-    private boolean isAdmin(HttpSession session) {
-        Account account = (Account) session.getAttribute("account");
-        if (account == null) return false;
-        
-        return account.getRoles().stream()
-                .anyMatch(role -> "ADMIN".equalsIgnoreCase(role.getRoleName()));
-    }
+    @Autowired
+    private AuthService authService;
     
-    /**
-     * Admin Dashboard Home
-     */
     @GetMapping("/dashboard")
-    public String adminDashboard(HttpSession session, Model model, RedirectAttributes redirectAttributes) {
-        // Check if user is logged in
-        Account account = (Account) session.getAttribute("account");
-        if (account == null) {
+    public String adminDashboard(Model model, RedirectAttributes redirectAttributes) {
+        if (!authService.isAuthenticated()) {
             redirectAttributes.addFlashAttribute("message", "❌ Vui lòng đăng nhập!");
             redirectAttributes.addFlashAttribute("messageType", "error");
             return "redirect:/account/login";
         }
         
-        // Check if user is admin
-        if (!isAdmin(session)) {
+        if (!authService.hasRole("ADMIN")) {
             redirectAttributes.addFlashAttribute("message", "❌ Bạn không có quyền truy cập trang này!");
             redirectAttributes.addFlashAttribute("messageType", "error");
             return "redirect:/home";
         }
         
-        // Get statistics
         try {
-            // Total orders
             long totalOrders = orderService.getAllOrders().size();
-            
-            // Total products
             long totalProducts = productRepository.count();
-            
-            // Total users
             long totalUsers = accountDAO.count();
             
-            // Total revenue (from delivered orders only)
             Double totalRevenue = orderService.getTotalRevenue();
             if (totalRevenue == null) {
                 totalRevenue = 0.0;
             }
             
-            // Add to model
             model.addAttribute("totalOrders", totalOrders);
             model.addAttribute("totalProducts", totalProducts);
             model.addAttribute("totalUsers", totalUsers);
             model.addAttribute("totalRevenue", totalRevenue);
             
-            // Order statistics by status
             long pendingOrders = orderService.countOrdersByStatus(1);
             long processingOrders = orderService.countOrdersByStatus(2);
             long shippedOrders = orderService.countOrdersByStatus(3);
@@ -104,9 +80,6 @@ public class AdminDashboardController {
         return "poly/admin/dashboard";
     }
     
-    /**
-     * Redirect /admin to /admin/dashboard
-     */
     @GetMapping
     public String adminRedirect() {
         return "redirect:/admin/dashboard";

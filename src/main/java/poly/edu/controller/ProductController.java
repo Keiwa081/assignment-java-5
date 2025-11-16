@@ -1,6 +1,5 @@
 package poly.edu.controller;
 
-import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -8,11 +7,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import poly.edu.model.Account;
 import poly.edu.model.Product;
-import poly.edu.model.Category;
 import poly.edu.repository.ProductRepository;
 import poly.edu.repository.CategoryRepository;
+import poly.edu.service.AuthService;
 import poly.edu.service.PromotionService;
 
 import java.time.LocalDateTime;
@@ -30,24 +28,18 @@ public class ProductController {
     @Autowired
     private PromotionService promotionService;
     
-    private boolean isAdmin(HttpSession session) {
-        Account account = (Account) session.getAttribute("account");
-        if (account == null) return false;
-        
-        return account.getRoles().stream()
-                .anyMatch(role -> "ADMIN".equalsIgnoreCase(role.getRoleName()));
-    }
+    @Autowired
+    private AuthService authService;
     
     @GetMapping("/add")
-    public String showAddForm(HttpSession session, Model model, RedirectAttributes redirectAttributes) {
-        Account account = (Account) session.getAttribute("account");
-        if (account == null) {
+    public String showAddForm(Model model, RedirectAttributes redirectAttributes) {
+        if (!authService.isAuthenticated()) {
             redirectAttributes.addFlashAttribute("message", "❌ Vui lòng đăng nhập!");
             redirectAttributes.addFlashAttribute("messageType", "error");
             return "redirect:/account/login";
         }
         
-        if (!isAdmin(session)) {
+        if (!authService.hasRole("ADMIN")) {
             redirectAttributes.addFlashAttribute("message", "❌ Bạn không có quyền truy cập!");
             redirectAttributes.addFlashAttribute("messageType", "error");
             return "redirect:/home";
@@ -62,10 +54,9 @@ public class ProductController {
     @PostMapping("/save")
     public String saveProduct(@ModelAttribute Product product,
                               @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
-                              HttpSession session,
                               RedirectAttributes redirectAttributes) {
         
-        if (!isAdmin(session)) {
+        if (!authService.hasRole("ADMIN")) {
             redirectAttributes.addFlashAttribute("message", "❌ Bạn không có quyền thực hiện thao tác này!");
             redirectAttributes.addFlashAttribute("messageType", "error");
             return "redirect:/home";
@@ -119,10 +110,9 @@ public class ProductController {
     
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable Integer id,
-                               HttpSession session,
                                Model model,
                                RedirectAttributes redirectAttributes) {
-        if (!isAdmin(session)) {
+        if (!authService.hasRole("ADMIN")) {
             redirectAttributes.addFlashAttribute("message", "❌ Bạn không có quyền truy cập!");
             redirectAttributes.addFlashAttribute("messageType", "error");
             return "redirect:/home";
@@ -147,10 +137,9 @@ public class ProductController {
     public String updateProduct(@PathVariable Integer id,
                                @ModelAttribute Product product,
                                @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
-                               HttpSession session,
                                RedirectAttributes redirectAttributes) {
         
-        if (!isAdmin(session)) {
+        if (!authService.hasRole("ADMIN")) {
             redirectAttributes.addFlashAttribute("message", "❌ Bạn không có quyền thực hiện thao tác này!");
             redirectAttributes.addFlashAttribute("messageType", "error");
             return "redirect:/home";
@@ -194,9 +183,8 @@ public class ProductController {
     
     @PostMapping("/delete/{id}")
     public String deleteProduct(@PathVariable Integer id,
-                               HttpSession session,
                                RedirectAttributes redirectAttributes) {
-        if (!isAdmin(session)) {
+        if (!authService.hasRole("ADMIN")) {
             redirectAttributes.addFlashAttribute("message", "❌ Bạn không có quyền thực hiện thao tác này!");
             redirectAttributes.addFlashAttribute("messageType", "error");
             return "redirect:/home";

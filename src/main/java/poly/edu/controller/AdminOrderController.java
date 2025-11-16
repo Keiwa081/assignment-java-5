@@ -8,6 +8,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import poly.edu.model.Order;
 import poly.edu.model.OrderDetail;
+import poly.edu.service.AuthService;
 import poly.edu.service.OrderService;
 
 import java.util.List;
@@ -19,12 +20,18 @@ public class AdminOrderController {
     @Autowired
     private OrderService orderService;
     
-    /**
-     * Display all orders (Admin view)
-     */
+    @Autowired
+    private AuthService authService;
+    
     @GetMapping
     public String adminOrdersPage(Model model, 
-                                 @RequestParam(required = false) Integer statusFilter) {
+                                 @RequestParam(required = false) Integer statusFilter,
+                                 RedirectAttributes redirectAttributes) {
+        if (!authService.hasRole("ADMIN")) {
+            redirectAttributes.addFlashAttribute("message", "❌ Không có quyền truy cập!");
+            return "redirect:/home";
+        }
+        
         List<Order> orders;
         
         if (statusFilter != null && statusFilter > 0) {
@@ -33,7 +40,6 @@ public class AdminOrderController {
             orders = orderService.getAllOrders();
         }
         
-        // Calculate statistics
         long pendingCount = orders.stream().filter(o -> o.getStatusId() == 1).count();
         long processingCount = orders.stream().filter(o -> o.getStatusId() == 2).count();
         long shippedCount = orders.stream().filter(o -> o.getStatusId() == 3).count();
@@ -49,13 +55,15 @@ public class AdminOrderController {
         return "poly/admin/orders";
     }
     
-    /**
-     * Display order detail (Admin view)
-     */
     @GetMapping("/{orderId}")
     public String adminOrderDetailPage(@PathVariable Integer orderId, 
                                        Model model,
                                        RedirectAttributes redirectAttributes) {
+        if (!authService.hasRole("ADMIN")) {
+            redirectAttributes.addFlashAttribute("message", "❌ Không có quyền truy cập!");
+            return "redirect:/home";
+        }
+        
         Order order = orderService.getOrderById(orderId);
         
         if (order == null) {
@@ -72,13 +80,15 @@ public class AdminOrderController {
         return "poly/admin/order-detail";
     }
     
-    /**
-     * Update order status
-     */
     @PostMapping("/{orderId}/update-status")
     public String updateOrderStatus(@PathVariable Integer orderId,
                                    @RequestParam Integer newStatus,
                                    RedirectAttributes redirectAttributes) {
+        
+        if (!authService.hasRole("ADMIN")) {
+            redirectAttributes.addFlashAttribute("message", "❌ Không có quyền!");
+            return "redirect:/home";
+        }
         
         Order order = orderService.getOrderById(orderId);
         
@@ -88,7 +98,6 @@ public class AdminOrderController {
             return "redirect:/admin/orders";
         }
         
-        // Validate status transition
         String validationMessage = validateStatusTransition(order.getStatusId(), newStatus);
         if (validationMessage != null) {
             redirectAttributes.addFlashAttribute("message", validationMessage);
@@ -110,31 +119,22 @@ public class AdminOrderController {
         return "redirect:/admin/orders/" + orderId;
     }
     
-    /**
-     * Validate status transition logic
-     */
     private String validateStatusTransition(Integer currentStatus, Integer newStatus) {
-        // Không thể chuyển từ trạng thái đã hủy
         if (currentStatus == 5) {
             return "❌ Không thể thay đổi trạng thái của đơn hàng đã hủy!";
         }
         
-        // Không thể chuyển từ đã giao về trạng thái trước đó
         if (currentStatus == 4 && newStatus < 4) {
             return "❌ Không thể chuyển đơn hàng đã giao về trạng thái trước đó!";
         }
         
-        // Không thể nhảy cóc trạng thái (ví dụ: từ Pending sang Delivered)
         if (newStatus - currentStatus > 1 && newStatus != 5) {
             return "❌ Phải cập nhật trạng thái theo thứ tự: Chờ xử lý → Đang xử lý → Đang giao → Đã giao";
         }
         
-        return null; // Valid transition
+        return null;
     }
     
-    /**
-     * Get status name by ID
-     */
     private String getStatusName(Integer statusId) {
         switch (statusId) {
             case 1: return "Chờ xử lý";
@@ -146,30 +146,23 @@ public class AdminOrderController {
         }
     }
     
-    /**
-     * Quick actions for order processing
-     */
     @PostMapping("/{orderId}/process")
-    public String processOrder(@PathVariable Integer orderId,
-                              RedirectAttributes redirectAttributes) {
-        return updateOrderStatus(orderId, 2, redirectAttributes); // Processing
+    public String processOrder(@PathVariable Integer orderId, RedirectAttributes ra) {
+        return updateOrderStatus(orderId, 2, ra);
     }
     
     @PostMapping("/{orderId}/ship")
-    public String shipOrder(@PathVariable Integer orderId,
-                           RedirectAttributes redirectAttributes) {
-        return updateOrderStatus(orderId, 3, redirectAttributes); // Shipped
+    public String shipOrder(@PathVariable Integer orderId, RedirectAttributes ra) {
+        return updateOrderStatus(orderId, 3, ra);
     }
     
     @PostMapping("/{orderId}/deliver")
-    public String deliverOrder(@PathVariable Integer orderId,
-                              RedirectAttributes redirectAttributes) {
-        return updateOrderStatus(orderId, 4, redirectAttributes); // Delivered
+    public String deliverOrder(@PathVariable Integer orderId, RedirectAttributes ra) {
+        return updateOrderStatus(orderId, 4, ra);
     }
     
     @PostMapping("/{orderId}/cancel")
-    public String cancelOrderAdmin(@PathVariable Integer orderId,
-                                  RedirectAttributes redirectAttributes) {
-        return updateOrderStatus(orderId, 5, redirectAttributes); // Cancelled
+    public String cancelOrderAdmin(@PathVariable Integer orderId, RedirectAttributes ra) {
+        return updateOrderStatus(orderId, 5, ra);
     }
 }

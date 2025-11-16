@@ -1,129 +1,230 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Sửa Sản phẩm - Poly Shop</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Chỉnh sửa sản phẩm</title>
+    <link rel="stylesheet" href="/header.css">
+    <link rel="stylesheet" href="/footer.css">
+    <link rel="stylesheet" href="/style.css">
+
     <style>
-        body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            min-height: 100vh;
+        .tab-container {
+            width: 480px;
+            margin: 60px auto;
+            background: linear-gradient(180deg, #ffffff, #e6e9f0);
+            color: #000;
+            border-radius: 12px;
+            padding: 25px 30px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
         }
-        
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 2rem 0;
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
         }
-        
-        .card {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            padding: 2rem;
-            margin: -30px auto 50px;
-            max-width: 800px;
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            background: #fff;
+            color: #000;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.25);
+            outline: none;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            background: #ffc107;
+            color: #000;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .btn-submit:hover {
+            background: #e0a800;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .back-link a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+
+        .preview {
+            display: block;
+            margin: 10px auto;
+            max-width: 150px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .alert {
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            border-radius: 8px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .product-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007bff;
+        }
+
+        .product-info p {
+            margin: 5px 0;
+            color: #495057;
+        }
+
+        .product-info strong {
+            color: #212529;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="container">
-            <div class="d-flex justify-content-between align-items-center">
-                <h1><i class="fas fa-edit"></i> Sửa Sản phẩm</h1>
-                <a href="/admin/dashboard" class="btn btn-light">
-                    <i class="fas fa-arrow-left"></i> Quay lại
-                </a>
-            </div>
-        </div>
+
+<div th:replace="poly/fragments/header :: header"></div>
+
+<div class="tab-container">
+    <h2>✏️ Chỉnh sửa sản phẩm</h2>
+
+    <!-- Thông tin sản phẩm hiện tại -->
+    <div class="product-info">
+        <p><strong>ID:</strong> <span th:text="${product.productId}">1</span></p>
+        <p><strong>Ngày tạo:</strong> <span th:text="${#temporals.format(product.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024</span></p>
     </div>
-    
-    <div class="container">
-        <div th:if="${message}" 
-             th:class="${messageType == 'success'} ? 'alert alert-success' : 'alert alert-danger'" 
-             th:text="${message}"></div>
-        
-        <div class="card">
-            <form th:action="@{/admin/product/update/{id}(id=${product.productId})}" method="POST" th:object="${product}">
-                <div class="mb-3">
-                    <label class="form-label">Tên sản phẩm *</label>
-                    <input type="text" class="form-control" th:field="*{name}" required>
-                </div>
-                
-                <div class="mb-3">
-                    <label class="form-label">Mô tả</label>
-                    <textarea class="form-control" th:field="*{description}" rows="3"></textarea>
-                </div>
-                
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Giá *</label>
-                        <input type="number" class="form-control" th:field="*{price}" step="1000" required>
-                    </div>
-                    
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Số lượng *</label>
-                        <input type="number" class="form-control" th:field="*{quantity}" required>
-                    </div>
-                </div>
-                
-                <div class="mb-3">
-                    <label class="form-label">URL Hình ảnh</label>
-                    <input type="text" class="form-control" th:field="*{imageUrl}">
-                </div>
-                
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Danh mục *</label>
-                        <select class="form-control" th:field="*{categoryId}" required>
-                            <option value="">-- Chọn danh mục --</option>
-                            <option th:each="cat : ${categories}" 
-                                    th:value="${cat.categoryId}" 
-                                    th:text="${cat.categoryName}"></option>
-                        </select>
-                    </div>
-                    
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Khuyến mãi</label>
-                        <select class="form-control" th:field="*{promotionId}">
-                            <option value="">-- Không có --</option>
-                            <option th:each="promo : ${promotions}" 
-                                    th:value="${promo.id}" 
-                                    th:text="${promo.name + ' (' + #numbers.formatPercent(promo.discount, 0, 0) + ')'}"></option>
-                        </select>
-                        <small class="text-muted">Chọn chương trình khuyến mãi cho sản phẩm</small>
-                    </div>
-                    
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Đánh giá</label>
-                        <input type="number" class="form-control" th:field="*{rating}" step="0.1" min="0" max="5">
-                    </div>
-                </div>
-                
-                <!-- Hiển thị thông tin promotion hiện tại (nếu có) -->
-                <div class="alert alert-info" th:if="${product.promotion != null}">
-                    <strong><i class="fas fa-info-circle"></i> Promotion hiện tại:</strong><br>
-                    <span th:text="${product.promotion.name}"></span> - 
-                    Giảm <span th:text="${#numbers.formatPercent(product.promotion.discount, 0, 0)}"></span><br>
-                    <small>
-                        Từ <span th:text="${#dates.format(product.promotion.startDate, 'dd/MM/yyyy')}"></span>
-                        đến <span th:text="${#dates.format(product.promotion.endDate, 'dd/MM/yyyy')}"></span>
-                    </small>
-                </div>
-                
-                <div class="d-flex gap-2 mt-4">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Cập nhật
-                    </button>
-                    <a href="/admin/dashboard" class="btn btn-secondary">
-                        <i class="fas fa-times"></i> Hủy
-                    </a>
-                </div>
-            </form>
+
+    <!-- Hiển thị thông báo -->
+    <div th:if="${message}"
+         th:class="${messageType == 'success'} ? 'alert alert-success' : 'alert alert-danger'"
+         th:text="${message}"></div>
+
+    <form th:action="@{'/admin/product/update/' + ${product.productId}}" method="POST" th:object="${product}" enctype="multipart/form-data">
+        <div class="form-group">
+            <label>Tên sản phẩm *</label>
+            <input type="text" th:field="*{name}" placeholder="Nhập tên sản phẩm" required>
         </div>
+
+        <div class="form-group">
+            <label>Mô tả</label>
+            <textarea th:field="*{description}" rows="3" placeholder="Nhập mô tả sản phẩm"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Giá (VNĐ) *</label>
+            <input type="number" th:field="*{price}" step="1000" min="0" placeholder="Nhập giá" required>
+        </div>
+
+        <div class="form-group">
+            <label>Số lượng *</label>
+            <input type="number" th:field="*{quantity}" min="0" placeholder="Nhập số lượng" required>
+        </div>
+
+        <div class="form-group">
+            <label>URL hình ảnh</label>
+            <input type="text" id="imageUrl" th:field="*{imageUrl}" placeholder="https://...">
+            <img id="preview" class="preview" th:src="${product.imageUrl}" alt="Xem trước ảnh" 
+                 style="display: block;" onerror="this.style.display='none'">
+        </div>
+
+        <div class="form-group">
+            <label>Danh mục *</label>
+            <select th:field="*{categoryId}" required>
+                <option value="">-- Chọn danh mục --</option>
+                <option th:each="cat : ${categories}" 
+                        th:value="${cat.categoryId}" 
+                        th:text="${cat.name}"
+                        th:selected="${cat.categoryId == product.categoryId}"></option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Khuyến mãi</label>
+            <select th:field="*{promotionId}">
+                <option value="">-- Không có --</option>
+                <option th:each="promo : ${promotions}"
+                        th:value="${promo.id}"
+                        th:text="${promo.name + ' (' + #numbers.formatPercent(promo.discount, 0, 0) + ')'}"
+                        th:selected="${promo.id == product.promotionId}"></option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Đánh giá</label>
+            <input type="number" th:field="*{rating}" step="0.1" min="0" max="5" placeholder="0 - 5">
+        </div>
+
+        <button type="submit" class="btn-submit">💾 Cập nhật sản phẩm</button>
+    </form>
+
+    <div class="back-link">
+        <a href="/admin/products">⬅ Quay lại danh sách sản phẩm</a>
     </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</div>
+
+<div th:replace="poly/fragments/footer :: footer"></div>
+
+<script>
+    // Hiển thị ảnh xem trước khi nhập URL
+    const imgInput = document.getElementById("imageUrl");
+    const preview = document.getElementById("preview");
+
+    imgInput.addEventListener("input", () => {
+        if (imgInput.value.startsWith("http")) {
+            preview.src = imgInput.value;
+            preview.style.display = "block";
+        } else {
+            preview.style.display = "none";
+        }
+    });
+</script>
+
 </body>
 </html>

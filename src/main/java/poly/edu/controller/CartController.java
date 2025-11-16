@@ -9,10 +9,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import jakarta.servlet.http.HttpSession;
 import poly.edu.dao.AccountDAO;
 import poly.edu.model.Account;
 import poly.edu.model.Cart;
+import poly.edu.service.AuthService;
 import poly.edu.service.CartService;
 import poly.edu.service.OrderService;
 
@@ -31,38 +31,22 @@ public class CartController {
     @Autowired
     private AccountDAO accountDAO;
     
-    // ==================== HELPER METHODS ====================
-    
-    private Account getCurrentAccount(HttpSession session) {
-        return (Account) session.getAttribute("account");
-    }
-    
-    private Integer getCurrentAccountId(HttpSession session) {
-        Account account = getCurrentAccount(session);
-        return account != null ? account.getAccountId() : null;
-    }
-    
-    private boolean isLoggedIn(HttpSession session) {
-        return getCurrentAccount(session) != null;
-    }
-    
-    // ==================== CART DISPLAY ====================
+    @Autowired
+    private AuthService authService;
     
     @GetMapping
-    public String cartPage(HttpSession session, Model model, RedirectAttributes redirectAttributes) {
-        if (!isLoggedIn(session)) {
+    public String cartPage(Model model, RedirectAttributes redirectAttributes) {
+        if (!authService.isAuthenticated()) {
             redirectAttributes.addFlashAttribute("message", "❌ Vui lòng đăng nhập để xem giỏ hàng!");
             redirectAttributes.addFlashAttribute("messageType", "error");
-            return "redirect:/login";
+            return "redirect:/account/login";
         }
         
-        Integer accountId = getCurrentAccountId(session);
+        Integer accountId = authService.getAccountId();
         List<Cart> cartItems = cartService.getCartItems(accountId);
         
-        // ✅ FIX: Tính tổng tiền với giá đã giảm
         double total = cartItems.stream()
                 .mapToDouble(item -> {
-                    // Sử dụng giá đã giảm thay vì giá gốc
                     Double price = item.getProduct().getDiscountedPrice();
                     return price * item.getQuantity();
                 })
@@ -75,22 +59,19 @@ public class CartController {
         return "poly/cart";
     }
     
-    // ==================== CART OPERATIONS ====================
-    
     @PostMapping("/add")
     public String addToCart(@RequestParam Integer productId, 
                            @RequestParam(defaultValue = "1") Integer quantity,
                            @RequestParam(required = false) String from,
-                           HttpSession session,
                            RedirectAttributes redirectAttributes) {
         
-        if (!isLoggedIn(session)) {
+        if (!authService.isAuthenticated()) {
             redirectAttributes.addFlashAttribute("message", "❌ Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!");
             redirectAttributes.addFlashAttribute("messageType", "error");
-            return "redirect:/login";
+            return "redirect:/account/login";
         }
         
-        Integer accountId = getCurrentAccountId(session);
+        Integer accountId = authService.getAccountId();
         String result = cartService.addToCart(accountId, productId, quantity);
         
         if (result.equals("out_of_stock")) {
@@ -122,14 +103,13 @@ public class CartController {
     @PostMapping("/update")
     public String updateQuantity(@RequestParam Integer productId, 
                                 @RequestParam Integer quantity,
-                                HttpSession session,
                                 RedirectAttributes redirectAttributes) {
         
-        if (!isLoggedIn(session)) {
-            return "redirect:/login";
+        if (!authService.isAuthenticated()) {
+            return "redirect:/account/login";
         }
         
-        Integer accountId = getCurrentAccountId(session);
+        Integer accountId = authService.getAccountId();
         String result = cartService.updateCartItemQuantity(accountId, productId, quantity);
         
         if (result.equals("removed")) {
@@ -152,14 +132,13 @@ public class CartController {
     
     @PostMapping("/remove")
     public String removeItem(@RequestParam Integer productId, 
-                            HttpSession session,
                             RedirectAttributes redirectAttributes) {
         
-        if (!isLoggedIn(session)) {
-            return "redirect:/login";
+        if (!authService.isAuthenticated()) {
+            return "redirect:/account/login";
         }
         
-        Integer accountId = getCurrentAccountId(session);
+        Integer accountId = authService.getAccountId();
         boolean success = cartService.removeFromCart(accountId, productId);
         
         if (success) {
@@ -174,13 +153,13 @@ public class CartController {
     }
     
     @PostMapping("/clear")
-    public String clearCart(HttpSession session, RedirectAttributes redirectAttributes) {
+    public String clearCart(RedirectAttributes redirectAttributes) {
         
-        if (!isLoggedIn(session)) {
-            return "redirect:/login";
+        if (!authService.isAuthenticated()) {
+            return "redirect:/account/login";
         }
         
-        Integer accountId = getCurrentAccountId(session);
+        Integer accountId = authService.getAccountId();
         boolean success = cartService.clearCart(accountId);
         
         if (success) {
@@ -194,18 +173,16 @@ public class CartController {
         return "redirect:/cart";
     }
 
-    // ==================== CHECKOUT FUNCTIONALITY ====================
-    
     @GetMapping("/checkout")
-    public String checkoutPage(HttpSession session, Model model, RedirectAttributes redirectAttributes) {
+    public String checkoutPage(Model model, RedirectAttributes redirectAttributes) {
         
-        if (!isLoggedIn(session)) {
+        if (!authService.isAuthenticated()) {
             redirectAttributes.addFlashAttribute("message", "❌ Vui lòng đăng nhập để thanh toán!");
             redirectAttributes.addFlashAttribute("messageType", "error");
-            return "redirect:/login";
+            return "redirect:/account/login";
         }
         
-        Integer accountId = getCurrentAccountId(session);
+        Integer accountId = authService.getAccountId();
         List<Cart> cartItems = cartService.getCartItems(accountId);
         
         if (cartItems.isEmpty()) {
@@ -214,7 +191,6 @@ public class CartController {
             return "redirect:/cart";
         }
         
-        // ✅ FIX: Tính tổng tiền với giá đã giảm
         double total = cartItems.stream()
                 .mapToDouble(item -> {
                     Double price = item.getProduct().getDiscountedPrice();
@@ -222,7 +198,7 @@ public class CartController {
                 })
                 .sum();
         
-        Account account = getCurrentAccount(session);
+        Account account = authService.getAccount();
         
         if (account.getPhone() == null || account.getAddress() == null) {
             account = accountDAO.findById(accountId).orElse(account);
@@ -239,16 +215,15 @@ public class CartController {
     public String processCheckout(@RequestParam String shippingAddress,
                                   @RequestParam String phone,
                                   @RequestParam(required = false) String note,
-                                  HttpSession session,
                                   RedirectAttributes redirectAttributes) {
         
-        if (!isLoggedIn(session)) {
+        if (!authService.isAuthenticated()) {
             redirectAttributes.addFlashAttribute("message", "❌ Vui lòng đăng nhập để đặt hàng!");
             redirectAttributes.addFlashAttribute("messageType", "error");
-            return "redirect:/login";
+            return "redirect:/account/login";
         }
         
-        Integer accountId = getCurrentAccountId(session);
+        Integer accountId = authService.getAccountId();
         
         if (shippingAddress == null || shippingAddress.trim().isEmpty()) {
             redirectAttributes.addFlashAttribute("message", "❌ Vui lòng nhập địa chỉ giao hàng!");

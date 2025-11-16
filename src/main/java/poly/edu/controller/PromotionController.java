@@ -1,14 +1,13 @@
 package poly.edu.controller;
 
-import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import poly.edu.model.Account;
 import poly.edu.model.Promotion;
+import poly.edu.service.AuthService;
 import poly.edu.service.PromotionService;
 
 import java.util.Date;
@@ -21,23 +20,12 @@ public class PromotionController {
     @Autowired
     private PromotionService promotionService;
     
-    /**
-     * Check if current user is admin
-     */
-    private boolean isAdmin(HttpSession session) {
-        Account account = (Account) session.getAttribute("account");
-        if (account == null) return false;
-        
-        return account.getRoles().stream()
-                .anyMatch(role -> "ADMIN".equalsIgnoreCase(role.getRoleName()));
-    }
+    @Autowired
+    private AuthService authService;
     
-    /**
-     * Danh sách promotion
-     */
     @GetMapping
-    public String listPromotions(HttpSession session, Model model, RedirectAttributes redirectAttributes) {
-        if (!isAdmin(session)) {
+    public String listPromotions(Model model, RedirectAttributes redirectAttributes) {
+        if (!authService.hasRole("ADMIN")) {
             redirectAttributes.addFlashAttribute("message", "❌ Bạn không có quyền truy cập!");
             redirectAttributes.addFlashAttribute("messageType", "error");
             return "redirect:/home";
@@ -49,12 +37,9 @@ public class PromotionController {
         return "poly/admin/promotion_list";
     }
     
-    /**
-     * Form thêm promotion
-     */
     @GetMapping("/add")
-    public String showAddForm(HttpSession session, Model model, RedirectAttributes redirectAttributes) {
-        if (!isAdmin(session)) {
+    public String showAddForm(Model model, RedirectAttributes redirectAttributes) {
+        if (!authService.hasRole("ADMIN")) {
             redirectAttributes.addFlashAttribute("message", "❌ Bạn không có quyền truy cập!");
             redirectAttributes.addFlashAttribute("messageType", "error");
             return "redirect:/home";
@@ -64,9 +49,6 @@ public class PromotionController {
         return "poly/admin/promotion_add";
     }
     
-    /**
-     * Lưu promotion mới
-     */
     @PostMapping("/save")
     public String savePromotion(@RequestParam String name,
                                @RequestParam String description,
@@ -74,17 +56,15 @@ public class PromotionController {
                                @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
                                @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate,
                                @RequestParam(defaultValue = "true") Boolean status,
-                               HttpSession session,
                                RedirectAttributes redirectAttributes) {
         
-        if (!isAdmin(session)) {
+        if (!authService.hasRole("ADMIN")) {
             redirectAttributes.addFlashAttribute("message", "❌ Bạn không có quyền thực hiện thao tác này!");
             redirectAttributes.addFlashAttribute("messageType", "error");
             return "redirect:/home";
         }
         
         try {
-            // Validate
             if (name == null || name.trim().isEmpty()) {
                 redirectAttributes.addFlashAttribute("message", "❌ Tên chương trình không được để trống!");
                 redirectAttributes.addFlashAttribute("messageType", "error");
@@ -126,15 +106,11 @@ public class PromotionController {
         }
     }
     
-    /**
-     * Form sửa promotion
-     */
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable Integer id,
-                              HttpSession session,
                               Model model,
                               RedirectAttributes redirectAttributes) {
-        if (!isAdmin(session)) {
+        if (!authService.hasRole("ADMIN")) {
             redirectAttributes.addFlashAttribute("message", "❌ Bạn không có quyền truy cập!");
             redirectAttributes.addFlashAttribute("messageType", "error");
             return "redirect:/home";
@@ -152,9 +128,6 @@ public class PromotionController {
         return "poly/admin/promotion_edit";
     }
     
-    /**
-     * Cập nhật promotion
-     */
     @PostMapping("/update/{id}")
     public String updatePromotion(@PathVariable Integer id,
                                  @RequestParam String name,
@@ -163,10 +136,9 @@ public class PromotionController {
                                  @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
                                  @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate,
                                  @RequestParam(defaultValue = "true") Boolean status,
-                                 HttpSession session,
                                  RedirectAttributes redirectAttributes) {
         
-        if (!isAdmin(session)) {
+        if (!authService.hasRole("ADMIN")) {
             redirectAttributes.addFlashAttribute("message", "❌ Bạn không có quyền thực hiện thao tác này!");
             redirectAttributes.addFlashAttribute("messageType", "error");
             return "redirect:/home";
@@ -201,14 +173,10 @@ public class PromotionController {
         }
     }
     
-    /**
-     * Xóa promotion
-     */
     @PostMapping("/delete/{id}")
     public String deletePromotion(@PathVariable Integer id,
-                                 HttpSession session,
                                  RedirectAttributes redirectAttributes) {
-        if (!isAdmin(session)) {
+        if (!authService.hasRole("ADMIN")) {
             redirectAttributes.addFlashAttribute("message", "❌ Bạn không có quyền thực hiện thao tác này!");
             redirectAttributes.addFlashAttribute("messageType", "error");
             return "redirect:/home";
