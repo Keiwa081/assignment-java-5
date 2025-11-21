@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Poly Shop</title>
+    <title>Employee Dashboard - Poly Shop</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --primary-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
             --card-shadow: 0 10px 30px rgba(0,0,0,0.1);
             --hover-shadow: 0 15px 40px rgba(0,0,0,0.2);
         }
@@ -126,7 +126,7 @@
         .action-card:hover {
             transform: translateY(-10px);
             box-shadow: var(--hover-shadow);
-            border-color: #667eea;
+            border-color: #4facfe;
         }
         
         .action-icon {
@@ -147,16 +147,6 @@
         
         .action-card.products .action-icon {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-        }
-        
-        .action-card.promotions .action-icon {
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
-            color: white;
-        }
-
-        .action-card.employees .action-icon {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
             color: white;
         }
         
@@ -192,6 +182,16 @@
             box-shadow: 0 5px 15px rgba(255,107,107,0.3);
             color: white;
         }
+
+        .admin-badge {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            color: #000;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-left: 10px;
+        }
     </style>
 </head>
 <body>
@@ -201,13 +201,17 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h1 class="dashboard-title">
-                        <i class="fas fa-shield-alt"></i> Admin Dashboard
+                        <i class="fas fa-user-tie"></i> Employee Dashboard
+                        <span th:if="${isAdmin}" class="admin-badge">👑 Admin</span>
                     </h1>
-                    <p class="dashboard-subtitle">Quản lý toàn bộ hệ thống Poly Shop</p>
+                    <p class="dashboard-subtitle">Quản lý đơn hàng và sản phẩm</p>
                 </div>
                 <div>
                     <a href="/home" class="btn btn-light me-2">
                         <i class="fas fa-home"></i> Trang chủ
+                    </a>
+                    <a th:if="${isAdmin}" href="/admin/dashboard" class="btn btn-warning me-2">
+                        <i class="fas fa-crown"></i> Admin Panel
                     </a>
                     <a href="/account/logout" class="logout-btn">
                         <i class="fas fa-sign-out-alt"></i> Đăng xuất
@@ -269,52 +273,68 @@
             </h3>
             
             <div class="row">
-                <div class="col-md-3 mb-4">
-                    <a href="/admin/orders" class="action-card orders">
+                <div class="col-md-6 mb-4">
+                    <a href="/employee/orders" class="action-card orders">
                         <div class="action-icon">
                             <i class="fas fa-clipboard-list"></i>
                         </div>
                         <h4 class="action-title">Quản lý đơn hàng</h4>
                         <p class="action-description">
-                            Xem và cập nhật đơn hàng
+                            Xem, cập nhật trạng thái và xử lý đơn hàng
                         </p>
                     </a>
                 </div>
                 
-                <div class="col-md-3 mb-4">
-                    <a href="/admin/products" class="action-card products">
+                <div class="col-md-6 mb-4">
+                    <a href="/employee/products" class="action-card products">
                         <div class="action-icon">
                             <i class="fas fa-box-open"></i>
                         </div>
-                        <h4 class="action-title">Quản lý sản phẩm</h4>
+                        <h4 class="action-title">Xem sản phẩm</h4>
                         <p class="action-description">
-                            Thêm, sửa, xóa sản phẩm
+                            Xem danh sách và thông tin chi tiết sản phẩm
                         </p>
                     </a>
                 </div>
-                
-                <div class="col-md-3 mb-4">
-                    <a href="/admin/promotion" class="action-card promotions">
-                        <div class="action-icon">
-                            <i class="fas fa-tags"></i>
-                        </div>
-                        <h4 class="action-title">Quản lý Khuyến mãi</h4>
-                        <p class="action-description">
-                            Tạo chương trình khuyến mãi
-                        </p>
-                    </a>
-                </div>
+            </div>
+        </div>
 
-                <div class="col-md-3 mb-4">
-                    <a href="/admin/employees" class="action-card employees">
-                        <div class="action-icon">
-                            <i class="fas fa-user-tie"></i>
-                        </div>
-                        <h4 class="action-title">Quản lý Nhân viên</h4>
-                        <p class="action-description">
-                            Quản lý tài khoản nhân viên
-                        </p>
-                    </a>
+        <!-- Order Status Summary -->
+        <div class="quick-actions mt-4">
+            <h3 class="mb-4 text-center" style="color: #333; font-weight: bold;">
+                <i class="fas fa-chart-pie"></i> Thống kê đơn hàng
+            </h3>
+            
+            <div class="row">
+                <div class="col-md-2 mb-3">
+                    <div class="stat-card text-center" style="background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);">
+                        <h6 class="stat-title">Chờ xử lý</h6>
+                        <p class="stat-value" style="color: #d63031;" th:text="${pendingOrders}">0</p>
+                    </div>
+                </div>
+                <div class="col-md-2 mb-3">
+                    <div class="stat-card text-center" style="background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);">
+                        <h6 class="stat-title" style="color: white;">Đang xử lý</h6>
+                        <p class="stat-value" style="color: white;" th:text="${processingOrders}">0</p>
+                    </div>
+                </div>
+                <div class="col-md-2 mb-3">
+                    <div class="stat-card text-center" style="background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%);">
+                        <h6 class="stat-title" style="color: white;">Đang giao</h6>
+                        <p class="stat-value" style="color: white;" th:text="${shippedOrders}">0</p>
+                    </div>
+                </div>
+                <div class="col-md-2 mb-3">
+                    <div class="stat-card text-center" style="background: linear-gradient(135deg, #55efc4 0%, #00b894 100%);">
+                        <h6 class="stat-title" style="color: white;">Đã giao</h6>
+                        <p class="stat-value" style="color: white;" th:text="${deliveredOrders}">0</p>
+                    </div>
+                </div>
+                <div class="col-md-2 mb-3">
+                    <div class="stat-card text-center" style="background: linear-gradient(135deg, #fab1a0 0%, #ff7675 100%);">
+                        <h6 class="stat-title" style="color: white;">Đã hủy</h6>
+                        <p class="stat-value" style="color: white;" th:text="${cancelledOrders}">0</p>
+                    </div>
                 </div>
             </div>
         </div>

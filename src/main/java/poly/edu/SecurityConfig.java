@@ -17,7 +17,11 @@ public class SecurityConfig {
     
     @Bean
     public PasswordEncoder passwordEncoder() {
+        // OPTION 1: Standard encoder (Khuyến nghị - cần migrate password)
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+        
+        // OPTION 2: Plain text encoder (KHÔNG AN TOÀN - chỉ dùng test)
+        // return new CustomPasswordEncoder();
     }
 
     @Bean
@@ -34,14 +38,17 @@ public class SecurityConfig {
         // Phân quyền sử dụng
         http.authorizeHttpRequests(req -> {
             // Yêu cầu quyền USER để truy cập /home
-//            req.requestMatchers("/home").hasRole("ADMIN");
+//            req.requestMatchers("/home").hasRole("USER");
             
             // Các URL yêu cầu quyền ADMIN
             req.requestMatchers("/admin/**").hasRole("ADMIN");
             
+            // Các URL yêu cầu quyền EMPLOYEE hoặc ADMIN
+            req.requestMatchers("/employee/**").hasAnyRole("EMPLOYEE", "ADMIN");
+            
             // Các URL yêu cầu authenticated (đăng nhập)
             req.requestMatchers("/account", "/account/update", "/account/doiMatKhau",
-                              "/profile/**", "/orders/**").authenticated();
+                              "/profile/**", "/orders/**", "/cart/**").authenticated();
             
             // Cho phép truy cập public
             req.requestMatchers("/", "/product/**", "/category/**", 

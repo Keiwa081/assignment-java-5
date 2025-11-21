@@ -47,9 +47,12 @@ public class AccountController {
 
         Account loggedIn = authService.getAccount();
         boolean isAdmin = authService.hasRole("ADMIN");
+        boolean isEmployee = authService.hasRole("EMPLOYEE");
 
         model.addAttribute("account", loggedIn);
         model.addAttribute("isAdmin", isAdmin);
+        model.addAttribute("isEmployee", isEmployee);
+        
         return "poly/taikhoan/account";
     }
 

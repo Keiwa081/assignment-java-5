@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Thêm nhân viên mới</title>
+    <link rel="stylesheet" href="/header.css">
+    <link rel="stylesheet" href="/footer.css">
+    <link rel="stylesheet" href="/style.css">
+
+    <style>
+        .tab-container {
+            width: 480px;
+            margin: 60px auto;
+            background: linear-gradient(180deg, #ffffff, #e6e9f0);
+            color: #000;
+            border-radius: 12px;
+            padding: 25px 30px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            background: #fff;
+            color: #000;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.25);
+            outline: none;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            background: #007bff;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .btn-submit:hover {
+            background: #0056b3;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .back-link a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+
+        .alert {
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            border-radius: 8px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .required {
+            color: #dc3545;
+        }
+
+        .password-toggle {
+            position: relative;
+        }
+
+        .password-toggle input {
+            padding-right: 40px;
+        }
+
+        .toggle-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+
+<div th:replace="poly/fragments/header :: header"></div>
+
+<div class="tab-container">
+    <h2>Thêm nhân viên mới</h2>
+
+    <!-- Hiển thị thông báo -->
+    <div th:if="${message}"
+         th:class="${messageType == 'success'} ? 'alert alert-success' : 'alert alert-danger'"
+         th:text="${message}"></div>
+
+    <form th:action="@{/admin/employees/save}" method="POST" th:object="${employee}">
+        <div class="form-group">
+            <label>Tên đăng nhập <span class="required">*</span></label>
+            <input type="text" th:field="*{username}" placeholder="Nhập tên đăng nhập" required>
+        </div>
+
+        <div class="form-group password-toggle">
+            <label>Mật khẩu <span class="required">*</span></label>
+            <input type="password" id="password" name="password" placeholder="Nhập mật khẩu" required minlength="6">
+            <span class="toggle-icon" onclick="togglePassword()">👁️</span>
+        </div>
+
+        <div class="form-group">
+            <label>Họ và tên <span class="required">*</span></label>
+            <input type="text" th:field="*{fullName}" placeholder="Nhập họ và tên" required>
+        </div>
+
+        <div class="form-group">
+            <label>Email <span class="required">*</span></label>
+            <input type="email" th:field="*{email}" placeholder="email@example.com" required>
+        </div>
+
+        <div class="form-group">
+            <label>Số điện thoại</label>
+            <input type="text" th:field="*{phone}" placeholder="0123456789" pattern="[0-9]{10,11}">
+        </div>
+
+        <div class="form-group">
+            <label>Địa chỉ</label>
+            <textarea th:field="*{address}" rows="3" placeholder="Nhập địa chỉ chi tiết"></textarea>
+        </div>
+
+        <button type="submit" class="btn-submit">💾 Lưu nhân viên</button>
+    </form>
+
+    <div class="back-link">
+        <a href="/admin/employees">⬅ Quay lại danh sách nhân viên</a>
+    </div>
+</div>
+
+<div th:replace="poly/fragments/footer :: footer"></div>
+
+<script>
+    function togglePassword() {
+        const passwordInput = document.getElementById('password');
+        const toggleIcon = document.querySelector('.toggle-icon');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleIcon.textContent = '🙈';
+        } else {
+            passwordInput.type = 'password';
+            toggleIcon.textContent = '👁️';
+        }
+    }
+</script>
+
+</body>
+</html>

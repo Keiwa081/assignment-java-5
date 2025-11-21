@@ -1,49 +1,152 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="UTF-8">
-<title>Trang tài khoản</title>
-<link rel="stylesheet" href="/style.css">
-<link rel="stylesheet" href="/header.css">
-<link rel="stylesheet" href="/footer.css">
+    <meta charset="UTF-8">
+    <title>Trang tài khoản</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/header.css">
+    <link rel="stylesheet" href="/footer.css">
+    <style>
+        .account-container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .account-header {
+            text-align: center;
+            padding-bottom: 30px;
+            border-bottom: 2px solid #f0f0f0;
+            margin-bottom: 30px;
+        }
+
+        .account-header h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .account-header p {
+            color: #666;
+            margin: 10px 0;
+            font-size: 16px;
+        }
+
+        .account-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .account-links a {
+            display: block;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .account-links a:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+        }
+
+        .admin-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
+        }
+
+        .employee-btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
+        }
+
+        .logout-btn {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%) !important;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .badge-admin {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            color: #000;
+        }
+
+        .badge-employee {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+    </style>
 </head>
 <body>
 
-	<div th:replace="poly/fragments/header :: header"></div>
+    <div th:replace="poly/fragments/header :: header"></div>
 
-	<!-- Account Container -->
-	<main>
-		<div class="account-container">
-			<div class="account-header">
-				<h1>
-					Xin chào, <span th:text="${account.fullName}">Nguyễn Văn A</span>
-					👤
-				</h1>
-				<p>
-					Email: <span th:text="${account.email}">abc@gmail.com</span>
-				</p>
-				<p>
-					Tài khoản: <span th:text="${account.username}">nguyenvana</span>
-				</p>
-				<p>
-					Trạng thái: <span
-						th:text="${account.active ? 'Đã kích hoạt' : 'Chưa kích hoạt'}">Đã
-						kích hoạt</span>
-				</p>
-			</div>
+    <!-- Account Container -->
+    <main>
+        <div class="account-container">
+            <div class="account-header">
+                <h1>
+                    Xin chào, <span th:text="${account.fullName}">Nguyễn Văn A</span> 👤
+                    <span th:if="${isAdmin}" class="role-badge badge-admin">👑 ADMIN</span>
+                    <span th:if="${isEmployee and !isAdmin}" class="role-badge badge-employee">👔 EMPLOYEE</span>
+                </h1>
+                <p>
+                    Email: <span th:text="${account.email}">abc@gmail.com</span>
+                </p>
+                <p>
+                    Tài khoản: <span th:text="${account.username}">nguyenvana</span>
+                </p>
+                <p>
+                    Trạng thái: <span th:text="${account.active ? '✅ Đã kích hoạt' : '❌ Chưa kích hoạt'}">Đã kích hoạt</span>
+                </p>
+            </div>
 
-			<div class="account-links">
-				<a href="/account/update">Cập nhật thông tin</a> <a
-					href="/account/doiMatKhau">Đổi mật khẩu</a> <a
-					href="/account/forgot">Quên mật khẩu</a> <a href="/admin/dashboard"
-					class="admin-btn" th:if="${isAdmin}"> Bảng điều khiển quản trị
-				</a> <a href="/account/logout" class="logout-btn">Đăng xuất</a>
-			</div>
+            <div class="account-links">
+                <a href="/account/update">
+                    <i class="fas fa-user-edit"></i> Cập nhật thông tin
+                </a>
+                
+                <a href="/account/doiMatKhau">
+                    <i class="fas fa-key"></i> Đổi mật khẩu
+                </a>
+                
+                <a href="/orders">
+                    <i class="fas fa-shopping-bag"></i> Đơn hàng của tôi
+                </a>
+                
+                <!-- Admin Dashboard Button -->
+                <a href="/admin/dashboard" class="admin-btn" th:if="${isAdmin}">
+                    <i class="fas fa-crown"></i> Bảng điều khiển Admin
+                </a>
+                
+                <!-- Employee Dashboard Button -->
+                <a href="/employee/dashboard" class="employee-btn" th:if="${isEmployee}">
+                    <i class="fas fa-user-tie"></i> Bảng điều khiển Nhân viên
+                </a>
+                
+                <a href="/account/logout" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                </a>
+            </div>
 
-		</div>
-	</main>
+        </div>
+    </main>
 
-	<div th:replace="poly/fragments/footer :: footer"></div>
+    <div th:replace="poly/fragments/footer :: footer"></div>
 
 </body>
 </html>
